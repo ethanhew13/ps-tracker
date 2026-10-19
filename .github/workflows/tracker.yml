@@ -2,7 +2,7 @@ name: PS This Month tracker
 
 on:
   schedule:
-   - cron: "7,22,37,52 * * * *"   # every 15 mins (GitHub may delay runs a bit)
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:          # lets you run it manually from the Actions tab
 
 permissions:
