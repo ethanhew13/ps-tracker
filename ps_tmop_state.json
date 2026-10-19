@@ -81,7 +81,7 @@
     "ts": "1791428312399",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "b41c4c59c8fa41abd191f93b845cc4e70a7e37f8"
+    "hash": "90279d6f5b067d8ed9ec5e0b150e241fa6eefeaa"
   },
   "en-my": {
     "status": "ok",
@@ -176,10 +176,10 @@
   },
   "es-pe": {
     "status": "ok",
-    "ts": null,
-    "title": "",
-    "desc": "",
-    "hash": "1458631a61292a7ae5b7c66d9c64ef4f89fd0ef7"
+    "ts": "1791906660539",
+    "title": "Este mes en PlayStation | Lanzamientos de PS5: octubre de 2026",
+    "desc": "Descubre los lanzamientos m\u00e1s destacados que llegar\u00e1n a PlayStation 5 en octubre de 2026, incluidos los t\u00edtulos m\u00e1s esperados de Konami, S-Game y Activision.",
+    "hash": "cc9aa1c8de7ac9426b10f52812e09b87010c8a53"
   },
   "it-it": {
     "status": "ok",
@@ -273,7 +273,7 @@
     "ts": "1789090305780",
     "title": "\u4eca\u6708\u306ePlayStation | PlayStation",
     "desc": "\u4eca\u6708\u306ePlayStation\u3067\u306f\u3001\u304a\u3059\u3059\u3081\u30bf\u30a4\u30c8\u30eb\u3084\u653b\u7565\u30ac\u30a4\u30c9\u306a\u3069\u6ce8\u76ee\u30c8\u30d4\u30c3\u30af\u30b9\u3092\u304a\u5c4a\u3051\u3057\u307e\u3059\u3002",
-    "hash": "29ae0d01e86f13670f715609c3ad0ebb2481e556"
+    "hash": "c890123fcfaf00da5969dce8ed036d16ba6b6839"
   },
   "ko-kr": {
     "status": "ok",
