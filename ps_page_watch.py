@@ -2,6 +2,7 @@
 """
 Watches specific web pages and pings Discord when they change.
 Add or remove pages in WATCH / KEYWORD_WATCH below. Stdlib only, no installs.
+Needs ps_common.py in the same folder.
 
 Usage:  python ps_page_watch.py
 Optional: set DISCORD_WEBHOOK_URL to get alerts in Discord.
@@ -11,14 +12,13 @@ Two kinds of watching:
   KEYWORD_WATCH  only GTA-related stuff (see KEYWORDS): links, text lines and image URLs that
                  mention it. Alerts when those appear or disappear, ignores everything else.
 
-Pages that return 404 (not live yet) are remembered and you get a "now LIVE" alert the moment
-they appear. First run just saves a baseline.
+Every alert is a readable summary plus two attached HTML files (before and after) with the
+differences highlighted. Pages that return 404 (not live yet) are remembered and you get a
+"now LIVE" alert the moment they appear. First run just saves a baseline.
 """
-import difflib
 import hashlib
 import html
 import json
-import os
 import re
 import sys
 import urllib.error
@@ -26,6 +26,9 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urljoin
+
+from ps_common import (UA, change_alert, gone_alert, image_urls, live_alert, parse_meta,
+                       send_alerts, to_lines)
 
 WATCH = {
     "ps-gta6-page": "https://www.playstation.com/en-us/games/grand-theft-auto-vi/",
@@ -48,12 +51,8 @@ KEYWORDS = re.compile(
 STATE_FILE = Path(__file__).with_name("ps_page_state.json")
 LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
 PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
 CONFIRM = False       # True = require the change on 2 consecutive runs before alerting
-MAX_DIFF = 14         # max changed text lines shown per alert
-MAX_IMG = 10          # max changed image lines shown per alert
 SNAP_V = 2            # bump when the snapshot format changes (triggers a silent re-baseline)
 MAX_STATE = 150_000   # max chars of page text kept in the state file
 
@@ -63,49 +62,8 @@ IGNORE_META = {"wca-ssr-version", "wca-theme", "viewport", "next-head-count",
 # visible-text lines to ignore (regex). Add noisy stuff here if you get false alerts.
 IGNORE_LINES = [re.compile(p) for p in [r"^©"]]
 
-PRICE = re.compile(r"\$\d[\d,]*\.\d\d")
-TAG_RE = re.compile(r"<meta\b[^>]*>", re.I)
-KEY_RE = re.compile(r"""(?:name|property)\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.I)
-VAL_RE = re.compile(r"""content\s*=\s*(?:"([^"]*)"|'([^']*)')""", re.I)
 A_RE = re.compile(r"""<a\b[^>]*?href\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>(.*?)</a>""", re.I | re.S)
-BLOCK_RE = re.compile(
-    r"</?(?:br|p|div|li|ul|ol|h[1-6]|tr|td|th|section|article|header|footer|nav|button|label|option)\b[^>]*>",
-    re.I)
-IMG_RE = re.compile(
-    r"""https?://[^\s"'<>()\\]+?\.(?:png|jpe?g|webp|gif|avif|svg)\b"""
-    r"""|https?://(?:image\.api|gmedia)\.playstation\.com[^\s"'<>()\\]*""", re.I)
-
-
-def parse_meta(page):
-    out = {}
-    for tag in TAG_RE.findall(page):
-        k, v = KEY_RE.search(tag), VAL_RE.search(tag)
-        if k and v:
-            out[(k.group(1) or k.group(2)).lower()] = html.unescape(v.group(1) or v.group(2) or "")
-    return out
-
-
-def to_lines(page):
-    s = re.sub(r"<(script|style|noscript|svg|template)\b.*?</\1>", " ", page, flags=re.S | re.I)
-    s = re.sub(r"<!--.*?-->", " ", s, flags=re.S)
-    s = BLOCK_RE.sub("\n", s)
-    s = re.sub(r"<[^>]+>", " ", s)
-    lines = []
-    for raw in html.unescape(s).splitlines():
-        line = re.sub(r"\s+", " ", raw).strip()
-        if not line or any(p.search(line) for p in IGNORE_LINES):
-            continue
-        if lines and lines[-1] == line:  # buttons etc. are often rendered twice
-            continue
-        lines.append(line)
-    return lines
-
-
-def image_urls(page):
-    """Every image URL in the raw page (including ones inside embedded JSON), minus query strings."""
-    s = page.replace("\\/", "/").replace("\\u002F", "/").replace("&amp;", "&")
-    urls = {m.group(0).split("?")[0].split("#")[0].rstrip(".,;") for m in IMG_RE.finditer(s)}
-    return sorted(urls)
+KEYWORD_NOTE = "Keyword watch: only GTA-related links, text and images on this page are shown."
 
 
 def keyword_lines(page, url):
@@ -117,7 +75,7 @@ def keyword_lines(page, url):
         text = re.sub(r"\s+", " ", html.unescape(text)).strip()
         if KEYWORDS.search(text) or KEYWORDS.search(href):
             found.add(f"[link] {text or '(no text)'} -> {urljoin(url, href)}")
-    for line in to_lines(page):
+    for line in to_lines(page, IGNORE_LINES):
         if KEYWORDS.search(line):
             found.add(f"[text] {line}")
     for u in image_urls(page):
@@ -144,7 +102,7 @@ def snapshot(url):
     meta = parse_meta(body)
     lines = [f"[meta] {k}: {v}" for k, v in sorted(meta.items()) if k not in IGNORE_META]
     lines += [f"[img] {u}" for u in image_urls(body)]
-    lines += to_lines(body)
+    lines += to_lines(body, IGNORE_LINES)
     text = "\n".join(lines)
     if len(lines) < 5:  # basically empty page (blocked / JS-only), don't trust it
         return {"status": "empty"}
@@ -156,56 +114,11 @@ def keyword_snapshot(url):
     status, body = fetch(url)
     if status != "ok":
         return {"status": status}
-    if len(to_lines(body)) < 15:  # blocked / JS-only shell, don't trust it
+    if len(to_lines(body, IGNORE_LINES)) < 15:  # blocked / JS-only shell, don't trust it
         return {"status": "empty"}
     text = "\n".join(keyword_lines(body, url))
     return {"status": "ok", "v": SNAP_V, "mode": "keywords",
             "hash": hashlib.sha1(text.encode()).hexdigest(), "text": text[:MAX_STATE]}
-
-
-def describe(name, url, old, new, kind="changed"):
-    out = [f"**{name}** {kind}", url]
-    po, pn = set(PRICE.findall(old)), set(PRICE.findall(new))
-    if po != pn:
-        out.append(f"prices: {', '.join(sorted(po)) or '-'} -> {', '.join(sorted(pn)) or '-'}")
-    diff = [l for l in difflib.unified_diff(old.splitlines(), new.splitlines(), lineterm="", n=0)
-            if l and l[0] in "+-" and not l.startswith(("+++", "---"))]
-    imgs = [l for l in diff if l[1:].startswith("[img] ")]
-    rest = [l for l in diff if not l[1:].startswith("[img] ")]
-    for l in rest[:MAX_DIFF]:
-        out.append("  " + l[:200])
-    if len(rest) > MAX_DIFF:
-        out.append(f"  ... and {len(rest) - MAX_DIFF} more changed lines")
-    for l in imgs[:MAX_IMG]:
-        out.append("  " + l[:240])
-    if len(imgs) > MAX_IMG:
-        out.append(f"  ... and {len(imgs) - MAX_IMG} more image changes")
-    return "\n".join(out)
-
-
-def preview(snap):
-    lines = snap.get("text", "").splitlines()
-    meta = [l for l in lines if l.startswith(("[meta] title:", "[meta] description:"))]
-    body = [l for l in lines if not l.startswith(("[meta]", "[img]"))][:8]
-    imgs = [l for l in lines if l.startswith("[img]")][:3]
-    return "\n".join("  " + l[:200] for l in meta + body + imgs)
-
-
-def notify(lines):
-    msg = "\n".join(lines)
-    print(msg, flush=True)
-    hook = os.environ.get("DISCORD_WEBHOOK_URL")
-    if hook:
-        try:
-            payload = {"content": ((PING_TEXT + "\n") if PING_TEXT else "") + msg[:1880]}
-            if PING_TEXT:
-                payload["allowed_mentions"] = {"parse": ["everyone"]}
-            body = json.dumps(payload).encode()
-            req = urllib.request.Request(
-                hook, data=body, headers={"Content-Type": "application/json", "User-Agent": UA})
-            urllib.request.urlopen(req, timeout=15).read()
-        except Exception as e:
-            print(f"discord webhook failed: {e}", file=sys.stderr)
 
 
 def load_state():
@@ -217,15 +130,16 @@ def load_state():
 
 def targets():
     for name, url in WATCH.items():
-        yield name, url, snapshot, "changed"
+        yield name, url, snapshot, ""
     for name, url in KEYWORD_WATCH.items():
-        yield name, url, keyword_snapshot, "has GTA-related changes"
+        yield name, url, keyword_snapshot, KEYWORD_NOTE
 
 
 def main():
     state = load_state()
+    stamp = datetime.now(LOCAL_TZ).strftime("%d %b %H:%M") + " AWST"
     alerts, baselined, notes, pending = [], [], [], []
-    for name, url, snap, kind in targets():
+    for name, url, snap, note in targets():
         new = snap(url)
         status = new["status"]
         old = state.get(name)
@@ -234,8 +148,8 @@ def main():
             if old and old.get("status") == "ok":
                 old["miss"] = old.get("miss", 0) + 1  # needs 2 misses in a row, avoids blips
                 if old["miss"] >= 2:
-                    alerts.append(f"**{name}** is gone ({status})\n{url}")
-                    state[name] = {"status": "missing"}
+                    alerts.append(gone_alert(name, url, stamp, old.get("text", ""), status[5:], note))
+                    state[name] = {"status": "missing", "text": old.get("text", "")}
             elif not old:
                 state[name] = {"status": "missing"}
                 notes.append(f"{name}: not live yet (404), will alert when it appears")
@@ -245,7 +159,10 @@ def main():
             continue
 
         if old and old.get("status") == "missing":  # it just appeared
-            alerts.append(f"**{name}** is now LIVE\n{url}\n{preview(new)}")
+            if old.get("text"):
+                alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "is back", note))
+            else:
+                alerts.append(live_alert(name, url, stamp, new["text"], note))
             state[name] = new
             continue
         if old:
@@ -262,13 +179,12 @@ def main():
             old["pending"] = new["hash"]  # first sighting, wait for the next run
             pending.append(name)
             continue
-        alerts.append(describe(name, url, old["text"], new["text"], kind))
+        alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "changed", note))
         state[name] = new
 
     STATE_FILE.write_text(json.dumps(state, indent=2))
-    stamp = datetime.now(LOCAL_TZ).strftime("%d %b %H:%M")
     if alerts:
-        notify([f"Page change detected ({stamp} AWST)"] + alerts)
+        send_alerts(alerts, PING_TEXT)
         return
     msgs = []
     if baselined:
