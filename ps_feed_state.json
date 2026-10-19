@@ -1,0 +1,42 @@
+{
+  "blog-gta6-tag": {
+    "items": {
+      "https://blog.playstation.com/2026/09/03/20260904-gta/": {
+        "title": "(For Southeast Asia) First look at the Grand Theft Auto VI Limited-Edition DualSense Wireless Controllers",
+        "hash": "88d2acf138d76e476301e09412c1934f157a1100"
+      },
+      "https://blog.playstation.com/2026/09/03/first-look-at-the-grand-theft-auto-vi-limited-edition-dualsense-wireless-controllers/": {
+        "title": "First look at the Grand Theft Auto VI Limited-Edition DualSense Wireless Controllers",
+        "hash": "b8b8425a6cb2fe55326b74a1a21b9fe1ea401bb2"
+      },
+      "https://blog.playstation.com/2026/07/14/19-unmissable-ps5-games-still-releasing-in-2026/": {
+        "title": "19 unmissable PS5 games still releasing in 2026",
+        "hash": "7af5e8147e7018e8c8976cbdee08ed6f288eace8"
+      },
+      "https://blog.playstation.com/2026/06/24/grand-theft-auto-vi-plays-best-on-ps5-november-19/": {
+        "title": "Grand Theft Auto VI plays best on PS5 November 19",
+        "hash": "6af8421a40dd844c559697676bf76ff00d250959"
+      }
+    }
+  },
+  "blog-gta6-search": {
+    "items": {
+      "https://blog.playstation.com/2026/06/24/grand-theft-auto-vi-plays-best-on-ps5-november-19/": {
+        "title": "Grand Theft Auto VI plays best on PS5 November 19",
+        "hash": "6af8421a40dd844c559697676bf76ff00d250959"
+      },
+      "https://blog.playstation.com/2026/09/03/first-look-at-the-grand-theft-auto-vi-limited-edition-dualsense-wireless-controllers/": {
+        "title": "First look at the Grand Theft Auto VI Limited-Edition DualSense Wireless Controllers",
+        "hash": "57e207e01203c755cf8476be355b3bd1a6362c91"
+      },
+      "https://blog.playstation.com/2026/09/03/20260904-gta/": {
+        "title": "(For Southeast Asia) First look at the Grand Theft Auto VI Limited-Edition DualSense Wireless Controllers",
+        "hash": "3ffbde935466e4aecaa39369a07dd7abc5860790"
+      },
+      "https://blog.playstation.com/2026/07/14/19-unmissable-ps5-games-still-releasing-in-2026/": {
+        "title": "19 unmissable PS5 games still releasing in 2026",
+        "hash": "7af5e8147e7018e8c8976cbdee08ed6f288eace8"
+      }
+    }
+  }
+}
