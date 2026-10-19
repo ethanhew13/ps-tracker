@@ -9,8 +9,8 @@ Optional: set DISCORD_WEBHOOK_URL to get alerts in Discord.
 How it decides something changed:
   - grabs the page's meta tags (title, description, release date, etc.) and its visible text
   - compares to the last saved copy and shows you exactly which lines changed
-  - a change has to show up on 2 runs in a row before it alerts (CONFIRM = True),
-    which filters out one-off glitches and flapping content
+  - also tracks every image URL on the page (resize/query params stripped so they don't count)
+  - alerts on the first run that sees a change (set CONFIRM = True to require 2 runs in a row)
 First run just saves a baseline.
 """
 import difflib
@@ -33,11 +33,14 @@ WATCH = {
 
 STATE_FILE = Path(__file__).with_name("ps_page_state.json")
 LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
+PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
-CONFIRM = True        # require the change on 2 consecutive runs before alerting
-MAX_DIFF = 14         # max changed lines shown per alert
+CONFIRM = False       # True = require the change on 2 consecutive runs before alerting
+MAX_DIFF = 14         # max changed text lines shown per alert
+MAX_IMG = 10          # max changed image lines shown per alert
+SNAP_V = 2            # bump when the snapshot format changes (triggers a silent re-baseline)
 MAX_STATE = 150_000   # max chars of page text kept in the state file
 
 # meta tags that change on every deploy and aren't real content changes
@@ -80,6 +83,18 @@ def to_lines(page):
     return lines
 
 
+IMG_RE = re.compile(
+    r"""https?://[^\s"'<>()\\]+?\.(?:png|jpe?g|webp|gif|avif|svg)\b"""
+    r"""|https?://(?:image\.api|gmedia)\.playstation\.com[^\s"'<>()\\]*""", re.I)
+
+
+def image_urls(page):
+    """Every image URL in the raw page (including ones inside embedded JSON), minus query strings."""
+    s = page.replace("\\/", "/").replace("\\u002F", "/").replace("&amp;", "&")
+    urls = {m.group(0).split("?")[0].split("#")[0].rstrip(".,;") for m in IMG_RE.finditer(s)}
+    return sorted(urls)
+
+
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "en"})
     try:
@@ -97,11 +112,13 @@ def snapshot(url):
         return {"status": status}
     meta = parse_meta(body)
     lines = [f"[meta] {k}: {v}" for k, v in sorted(meta.items()) if k not in IGNORE_META]
+    lines += [f"[img] {u}" for u in image_urls(body)]
     lines += to_lines(body)
     text = "\n".join(lines)
     if len(lines) < 5:  # basically empty page (blocked / JS-only), don't trust it
         return {"status": "empty"}
-    return {"status": "ok", "hash": hashlib.sha1(text.encode()).hexdigest(), "text": text[:MAX_STATE]}
+    return {"status": "ok", "v": SNAP_V, "hash": hashlib.sha1(text.encode()).hexdigest(),
+            "text": text[:MAX_STATE]}
 
 
 def describe(name, url, old, new):
@@ -111,10 +128,16 @@ def describe(name, url, old, new):
         out.append(f"prices: {', '.join(sorted(po)) or '-'} -> {', '.join(sorted(pn)) or '-'}")
     diff = [l for l in difflib.unified_diff(old.splitlines(), new.splitlines(), lineterm="", n=0)
             if l and l[0] in "+-" and not l.startswith(("+++", "---"))]
-    for l in diff[:MAX_DIFF]:
+    imgs = [l for l in diff if l[1:].startswith("[img] ")]
+    rest = [l for l in diff if not l[1:].startswith("[img] ")]
+    for l in rest[:MAX_DIFF]:
         out.append("  " + l[:160])
-    if len(diff) > MAX_DIFF:
-        out.append(f"  ... and {len(diff) - MAX_DIFF} more changed lines")
+    if len(rest) > MAX_DIFF:
+        out.append(f"  ... and {len(rest) - MAX_DIFF} more changed lines")
+    for l in imgs[:MAX_IMG]:
+        out.append("  " + l[:240])
+    if len(imgs) > MAX_IMG:
+        out.append(f"  ... and {len(imgs) - MAX_IMG} more image changes")
     return "\n".join(out)
 
 
@@ -124,7 +147,10 @@ def notify(lines):
     hook = os.environ.get("DISCORD_WEBHOOK_URL")
     if hook:
         try:
-            body = json.dumps({"content": msg[:1900]}).encode()
+            payload = {"content": ((PING_TEXT + "\n") if PING_TEXT else "") + msg[:1880]}
+            if PING_TEXT:
+                payload["allowed_mentions"] = {"parse": ["everyone"]}
+            body = json.dumps(payload).encode()
             req = urllib.request.Request(
                 hook, data=body, headers={"Content-Type": "application/json", "User-Agent": UA})
             urllib.request.urlopen(req, timeout=15).read()
@@ -148,7 +174,7 @@ def main():
             print(f"[{name}] {new['status']} (skipped)", file=sys.stderr)
             continue
         old = state.get(name)
-        if not old or old.get("status") != "ok":
+        if not old or old.get("status") != "ok" or old.get("v") != SNAP_V:
             state[name] = new
             baselined.append(name)
             continue

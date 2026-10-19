@@ -28,6 +28,7 @@ from pathlib import Path
 URL = "https://www.playstation.com/{region}/editorial/this-month-on-playstation/"
 STATE_FILE = Path(__file__).with_name("ps_tmop_state.json")
 LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
+PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
@@ -114,7 +115,10 @@ def notify(lines):
     hook = os.environ.get("DISCORD_WEBHOOK_URL")
     if hook:
         try:
-            body = json.dumps({"content": msg[:1900]}).encode()
+            payload = {"content": ((PING_TEXT + "\n") if PING_TEXT else "") + msg[:1880]}
+            if PING_TEXT:
+                payload["allowed_mentions"] = {"parse": ["everyone"]}
+            body = json.dumps(payload).encode()
             req = urllib.request.Request(
                 hook, data=body, headers={"Content-Type": "application/json", "User-Agent": UA})
             urllib.request.urlopen(req, timeout=15).read()
