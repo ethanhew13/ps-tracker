@@ -1,7 +1,9 @@
 name: PS This Month tracker
 
 on:
-  workflow_dispatch:          # lets you run it manually from the Actions tab
+  schedule:
+    - cron: "7,22,37,52 * * * *"   # every 15 mins (GitHub may delay runs a bit)
+  workflow_dispatch:                # lets you run it manually from the Actions tab
 
 permissions:
   contents: write
@@ -29,6 +31,11 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python ps_page_watch.py
+
+      - name: Run feed watcher
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python ps_feed_watch.py
 
       - name: Save state
         run: |
