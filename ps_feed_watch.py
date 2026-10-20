@@ -154,7 +154,9 @@ def edited_post_alert(feed, p, old_body, stamp):
         a["text"] = a["text"].replace("**New PlayStation Blog post**", "**PlayStation Blog post edited**", 1)
         return a
     return change_alert(cut(p["title"], 90), p["link"], stamp, body_snapshot(old_body), body_snapshot(p["body"]),
-                        "blog post edited", note=f"Feed: {feed}", stub=slug(p))
+                        "blog post edited", note=f"Feed: {feed}", stub=slug(p),
+                        raw_before=post_page(dict(p, body=old_body), "BEFORE", stamp).decode(),
+                        raw_after=post_page(p, "AFTER", stamp).decode(), prepared=True)
 
 
 def load_state():
