@@ -15,7 +15,9 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -331,7 +333,7 @@ def _compose(name, url, stamp, d, kind, max_text, max_img, max_meta, attached=fr
     return "\n".join(out)
 
 
-def build_message(name, url, stamp, d, kind="changed", limit=1850, attached=frozenset(), exact=False):
+def build_message(name, url, stamp, d, kind="changed", limit=1650, attached=frozenset(), exact=False):
     max_text, max_img, max_meta = 12, 4, 4
     while True:
         msg = _compose(name, url, stamp, d, kind, max_text, max_img, max_meta, attached, exact)
@@ -718,6 +720,78 @@ def gone_alert(name, url, stamp, old_text, status="404", note="", raw=None):
     if files:
         out += ["", "Attached: the last version we saw (download and open in a browser)."]
     return {"text": "\n".join(out), "files": files}
+
+
+# ---------------------------------------------------------------- Wayback Machine
+def _spn2(url, access, secret, max_wait):
+    """Save Page Now 2 (needs the free archive.org S3-style keys): reliable, returns a job we poll."""
+    hdr = {"Accept": "application/json", "Authorization": f"LOW {access}:{secret}", "User-Agent": UA}
+    body = urllib.parse.urlencode({"url": url, "capture_all": "1", "if_not_archived_within": "90"}).encode()
+    with urllib.request.urlopen(urllib.request.Request("https://web.archive.org/save", data=body, headers=hdr),
+                                timeout=30) as r:
+        job = json.loads(r.read())
+    if job.get("status") == "error" or not job.get("job_id"):
+        return None, (job.get("message") or "save refused")[:80]
+    end = time.time() + max_wait
+    while time.time() < end:
+        time.sleep(5)
+        with urllib.request.urlopen(urllib.request.Request(
+                f"https://web.archive.org/save/status/{job['job_id']}", headers=hdr), timeout=30) as r:
+            st = json.loads(r.read())
+        if st.get("status") == "success":
+            return f"https://web.archive.org/web/{st['timestamp']}/{st.get('original_url') or url}", ""
+        if st.get("status") == "error":
+            return None, (st.get("message") or st.get("status_ext") or "capture failed")[:80]
+    return None, "still queued after waiting"
+
+
+def _spn_simple(url, max_wait):
+    """Plain /save/<url> request: works without keys but is rate limited and flakier."""
+    req = urllib.request.Request("https://web.archive.org/save/" + url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=max_wait) as r:
+        loc, final = r.headers.get("Content-Location") or "", r.geturl()
+    if loc.startswith("/web/"):
+        return "https://web.archive.org" + loc, ""
+    if "/web/" in final and "/save/" not in final:
+        return final, ""
+    return None, "no snapshot link returned"
+
+
+def wayback_save(url, max_wait=75):
+    """Ask the Internet Archive to capture a page now. Returns (snapshot link or None, short note)."""
+    access, secret = os.environ.get("IA_ACCESS_KEY"), os.environ.get("IA_SECRET_KEY")
+    try:
+        return _spn2(url, access, secret, max_wait) if (access and secret) else _spn_simple(url, max_wait)
+    except urllib.error.HTTPError as e:
+        note = f"HTTP {e.code}"
+    except Exception as e:
+        note = type(e).__name__
+    try:  # saving failed, so at least point at the newest capture that already exists
+        q = urllib.parse.urlencode({"url": url})
+        with urllib.request.urlopen(urllib.request.Request(f"https://archive.org/wayback/available?{q}",
+                                                           headers={"User-Agent": UA}), timeout=20) as r:
+            snap = (json.loads(r.read()).get("archived_snapshots") or {}).get("closest") or {}
+        if snap.get("url"):
+            return None, f"{note}, newest existing capture: {snap['url']}"
+    except Exception:
+        pass
+    return None, note
+
+
+def wayback_many(urls, limit=6, workers=3):
+    """Capture several pages in parallel. Returns {url: (link or None, note)} for the first `limit` urls."""
+    urls = list(dict.fromkeys(urls))[:limit]
+    if not urls:
+        return {}
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        return dict(zip(urls, pool.map(wayback_save, urls)))
+
+
+def wayback_line(before, after, note=""):
+    """One message line with the Wayback Machine links (wrapped in <> so Discord doesn't add previews)."""
+    if after:
+        return "Wayback Machine: " + (f"before <{before}> | after <{after}>" if before else f"saved <{after}>")
+    return "Wayback Machine: couldn't save a copy now (" + (note or "unknown error") + ")" + (f" | earlier copy <{before}>" if before else "")
 
 
 # ---------------------------------------------------------------- Discord delivery

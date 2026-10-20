@@ -17,7 +17,8 @@ after (the last saved copy lives in snapshots/), with every image and the list o
 very end of each file. Rebuilt-preview fallback if no earlier copy exists. The
 differences listed at the bottom. Changed images are attached to the alert too, and every image the pages
 use is saved into an images/ folder next to this script (so the workflow commits it to the repo),
-which keeps images viewable after PlayStation removes them. Pages that return 404 (not live yet) are remembered and you get a
+which keeps images viewable after PlayStation removes them. Every page is also saved to the Wayback
+Machine (once when first seen, then again on every change) and the alert links the before/after captures. Pages that return 404 (not live yet) are remembered and you get a
 "now LIVE" alert the moment they appear. First run just saves a baseline.
 """
 import hashlib
@@ -32,7 +33,7 @@ from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
 from ps_common import (UA, change_alert, gone_alert, image_urls, live_alert, parse_meta,
-                       parse_snapshot, send_alerts, sniff, to_lines)
+                       parse_snapshot, send_alerts, sniff, to_lines, wayback_line, wayback_many)
 
 WATCH = {
     "ps-gta6-page": "https://www.playstation.com/en-us/games/grand-theft-auto-vi/",
@@ -40,6 +41,9 @@ WATCH = {
     "store-gta6-ultimate": "https://store.playstation.com/en-us/product/EP1004-PPSA01547_00-GTAVIULTIMATE001",
     "support-gta6-offer-terms": "https://www.playstation.com/en-us/support/games/gta-vi-offer-terms",
     "support-gta6-game": "https://www.playstation.com/en-us/support/games/gta-vi-game/",
+    "nz-oflc-gta6": "https://www.classificationoffice.govt.nz/find-a-rating/quick-takes/grand-theft-auto-vi/",
+    "vector-work": "https://vectormedia.com/work/",
+    "vector-blog": "https://vectormedia.com/blog",
 }
 
 KEYWORD_WATCH = {
@@ -62,6 +66,9 @@ MAX_STATE = 150_000   # max chars of page text kept in the state file
 
 SNAP_DIR = Path(__file__).with_name("snapshots")   # last saved HTML of each page (the "before" copy)
 MAX_RAW = 2_000_000          # pages bigger than this are not saved as exact copies
+
+ARCHIVE_WAYBACK = True       # save pages to the Wayback Machine (first sighting + every change)
+WAYBACK_MAX_PER_RUN = 6      # be polite: at most this many captures per run, the rest wait for the next run
 
 ARCHIVE_IMAGES = True        # True = save every image into images/ (committed to the repo by the workflow)
 IMAGE_DIR = Path(__file__).with_name("images")
@@ -264,7 +271,7 @@ def main():
     state = load_state()
     stamp = datetime.now(LOCAL_TZ).strftime("%d %b %H:%M") + " AWST"
     alerts, baselined, notes, pending = [], [], [], []
-    arch, current_urls = Archive(), []
+    arch, current_urls, wb_jobs = Archive(), [], []  # wb_jobs: (name, url, alert or None, previous capture)
     for name, url, snap, note in targets():
         new = snap(url)
         raw = new.pop("_raw", None)
@@ -277,7 +284,7 @@ def main():
                 if old["miss"] >= 2:
                     alerts.append(gone_alert(name, url, stamp, old.get("text", ""), status[5:], note,
                                              raw=load_raw(name)))
-                    state[name] = {"status": "missing", "text": old.get("text", "")}
+                    state[name] = {"status": "missing", "text": old.get("text", ""), "wayback": old.get("wayback")}
             elif not old:
                 state[name] = {"status": "missing"}
                 notes.append(f"{name}: not live yet (404), will alert when it appears")
@@ -289,11 +296,13 @@ def main():
 
         if old and old.get("status") == "missing":  # it just appeared
             if old.get("text"):
-                alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "is back", note,
-                                           images=arch.images_for(old["text"], new["text"]),
-                                           raw_before=load_raw(name), raw_after=raw))
+                alert = change_alert(name, url, stamp, old["text"], new["text"], "is back", note,
+                                     images=arch.images_for(old["text"], new["text"]),
+                                     raw_before=load_raw(name), raw_after=raw)
             else:
-                alerts.append(live_alert(name, url, stamp, new["text"], note, raw=raw))
+                alert = live_alert(name, url, stamp, new["text"], note, raw=raw)
+            alerts.append(alert)
+            wb_jobs.append((name, url, alert, old.get("wayback")))
             state[name] = new
             save_raw(name, raw)
             continue
@@ -302,6 +311,7 @@ def main():
         if not old or old.get("status") != "ok" or old.get("v") != SNAP_V:
             state[name] = new
             save_raw(name, raw)
+            wb_jobs.append((name, url, None, None))
             n = len(new["text"].splitlines()) if new.get("mode") == "keywords" else None
             baselined.append(name if n is None else f"{name} ({n} GTA matches)")
             continue
@@ -309,28 +319,51 @@ def main():
             old.pop("pending", None)  # change flipped back, ignore it
             if not (SNAP_DIR / f"{name}.html").exists():
                 save_raw(name, raw)  # first run after upgrading: save the copy we will compare against later
+            if not old.get("wayback") and old.get("wb_fail", 0) < 4:
+                wb_jobs.append((name, url, None, None))  # never captured yet (or earlier tries failed)
             continue
         if CONFIRM and old.get("pending") != new["hash"]:
             old["pending"] = new["hash"]  # first sighting, wait for the next run
             pending.append(name)
             continue
-        alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "changed", note,
-                                   images=arch.images_for(old["text"], new["text"]),
-                                   raw_before=load_raw(name), raw_after=raw))
+        alert = change_alert(name, url, stamp, old["text"], new["text"], "changed", note,
+                             images=arch.images_for(old["text"], new["text"]),
+                             raw_before=load_raw(name), raw_after=raw)
+        alerts.append(alert)
+        wb_jobs.append((name, url, alert, old.get("wayback")))
         state[name] = new
         save_raw(name, raw)
 
+    wb_note = ""
+    if ARCHIVE_WAYBACK and wb_jobs:
+        jobs = sorted(wb_jobs, key=lambda j: j[2] is None)[:WAYBACK_MAX_PER_RUN]  # pages with alerts first
+        results = wayback_many([j[1] for j in jobs], limit=WAYBACK_MAX_PER_RUN)
+        saved = 0
+        for name, url, alert, before in jobs:
+            link, why = results.get(url, (None, "skipped"))
+            entry = state.get(name) or {}
+            if link:
+                saved += 1
+                entry["wayback"] = link
+                entry.pop("wb_fail", None)
+            elif entry.get("status") == "ok":
+                entry["wb_fail"] = entry.get("wb_fail", 0) + 1
+            if alert is not None:
+                alert["text"] += "\n" + wayback_line(before, link, why)
+        wb_note = f"wayback: {saved}/{len(jobs)} saved"
     arch.archive_many(list(dict.fromkeys(current_urls)), MAX_DOWNLOADS_PER_RUN)
     arch.save()
     STATE_FILE.write_text(json.dumps(state, indent=2))
     if alerts:
         send_alerts(alerts, PING_TEXT)
-        print(f"[{stamp}] {arch.summary()}")
+        print(f"[{stamp}] {wb_note + '; ' if wb_note else ''}{arch.summary()}")
         return
     msgs = []
     if baselined:
         msgs.append(f"baseline saved for: {', '.join(baselined)}")
     msgs += notes
+    if wb_note:
+        msgs.append(wb_note)
     if pending:
         msgs.append(f"unconfirmed change on: {', '.join(pending)}")
     print(f"[{stamp}] " + "; ".join((msgs or ["no changes"]) + [arch.summary()]))
