@@ -130,10 +130,10 @@
   "file": "0155aeb622b609a8.webp"
  },
  "https://i0.wp.com/vectormedia.com/wp-content/uploads/2025/06/vector-website.png": {
-  "failed": 1
+  "failed": 2
  },
  "https://i0.wp.com/vectormedia.com/wp-content/uploads/2026/09/Vector_Social-Profile-Pictur_512x512.png": {
-  "failed": 1
+  "failed": 2
  },
  "https://image.api.playstation.com/grc/images/ratings/4k/esrb/m17.png": {
   "bytes": 6952,
@@ -422,6 +422,56 @@
  "https://vectormedia.com/wp-content/uploads/2025/06/Vector-Identity-Primary-Logo.jpg": {
   "bytes": 121992,
   "file": "3df29ebb46d676d9.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/05/250207029-0_NYC_TLG_None_NBA_04-25-20.jpg": {
+  "bytes": 2355688,
+  "file": "f642637177ffcce3.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/05/251222011-0_NYC_TLG_FW_BathBodyWorks_04-26-149-2.jpg": {
+  "bytes": 2820326,
+  "file": "3c3e251849c03bb6.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/06/250224023-0_New-York_None_None_UnknownBrand_UnknownDate-5.jpg": {
+  "bytes": 2217390,
+  "file": "d508eb8aa1b1996b.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/07/260227003-0_NYC_CustomCoach_Gotham_7-26-11.jpg": {
+  "bytes": 2817954,
+  "file": "f04cc82ee76f6b04.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/07/NYC_260205032-0_HJ_SerenaLily_6-26-2.jpg": {
+  "bytes": 2930471,
+  "file": "fecb55c8e1e451ff.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/08/260407007-0_CHI_DD_FW_Paramount_PawPatrolMovie_07-26-8.jpg": {
+  "bytes": 2522404,
+  "file": "feafc3c5d54fe0b1.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/08/260407007-0_HOU_DD_FW_Paramount_PawPatrolMovie_07-26-4-1.jpg": {
+  "bytes": 2335033,
+  "file": "a6f99b1e7147871c.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/08/260423039-0_DAL_DART_BUS_KongHeadliner_MorganMorgan_07-26-2.jpg": {
+  "bytes": 2917925,
+  "file": "7c0cd54799ac6951.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/08/SF_DD_FW_Marcum_09.23-22.jpg": {
+  "bytes": 2321918,
+  "file": "89c07aaf37af6e46.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/09/260306017-0_Essentia_05.26-62.jpg": {
+  "failed": 1
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/09/260508019-0_OC_BUS_King_Luna-Grill_8-7-26-6.JPG": {
+  "failed": 1
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/09/260729016-0_CHI_DD_FW_NBCChicago_Big10_09-26-33.jpg": {
+  "bytes": 2926619,
+  "file": "47276530a8e6551d.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/10/260114032-0_OC_BUS_USK_City-of-Hope_9-06-26-22.jpg": {
+  "bytes": 2238523,
+  "file": "30850d3c433d6aec.jpg"
  },
  "https://www.esrb.org/wp-content/uploads/2019/08/privacy_certified_globe_registered.svg": {
   "bytes": 14404,
