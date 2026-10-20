@@ -4,9 +4,11 @@ Shared helpers for the PlayStation watchers (ps_page_watch.py, ps_feed_watch.py)
 page parsing, change diffing, readable Discord summaries and before/after HTML previews.
 Stdlib only. Keep this file in the same folder as the watcher scripts.
 """
+import base64
 import difflib
 import html
 import json
+import mimetypes
 import os
 import re
 import sys
@@ -31,6 +33,29 @@ IMG_RE = re.compile(
     r"""|https?://(?:image\.api|gmedia)\.playstation\.com[^\s"'<>()\\]*""", re.I)
 LINK_LINE = re.compile(r"^\[link\] (.*) -> (\S+)$")
 esc = html.escape
+
+MAX_ATTACH = 4            # changed images attached to a Discord alert, per side (new / removed)
+ATTACH_BYTES = 5_000_000  # total size of attached images per alert
+EMBED_ONE = 600_000       # biggest image embedded straight into the HTML previews
+EMBED_TOTAL = 1_500_000   # total size of images embedded into the HTML previews
+UPLOAD_LIMIT = 7_500_000  # stay safely under Discord's upload limit
+
+
+def sniff(data):
+    """(mime type, extension) from the first bytes of an image, or ('application/octet-stream', '.bin')."""
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg", ".jpg"
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png", ".png"
+    if data[:6] in (b"GIF87a", b"GIF89a"):
+        return "image/gif", ".gif"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp", ".webp"
+    if data[4:8] == b"ftyp" and b"avif" in data[8:16]:
+        return "image/avif", ".avif"
+    if b"<svg" in data[:500].lower():
+        return "image/svg+xml", ".svg"
+    return "application/octet-stream", ".bin"
 
 
 # ---------------------------------------------------------------- page parsing
@@ -248,10 +273,10 @@ def _disp(line):
 
 
 def _meta_val(v):
-    return short_img(v) if (re.match(r"https?://\S+$", v) and IMG_RE.search(v)) else cut(v, 90)
+    return v if re.match(r"https?://\S+$", v) else cut(v, 90)
 
 
-def _compose(name, url, stamp, d, kind, max_text, max_img, max_meta):
+def _compose(name, url, stamp, d, kind, max_text, max_img, max_meta, attached=frozenset(), exact=False):
     out = [f"**{name}** {kind} ({stamp})", url, "", f"What changed: {_summary(d)}"]
     pl = _prices_line(d)
     if pl:
@@ -259,7 +284,7 @@ def _compose(name, url, stamp, d, kind, max_text, max_img, max_meta):
 
     meta_lines = []
     for k, ov, nv in d["meta"][:max_meta]:
-        if ov is not None and nv is not None and not (_meta_val(ov) != cut(ov, 90) or _meta_val(nv) != cut(nv, 90)):
+        if ov is not None and nv is not None and not (re.match(r"https?://\S+$", ov) or re.match(r"https?://\S+$", nv)):
             a, b = snippet_pair(ov, nv, full=90)
             meta_lines += [f"- {k}: {a}", f"+ {k}: {b}"]
         else:
@@ -288,21 +313,28 @@ def _compose(name, url, stamp, d, kind, max_text, max_img, max_meta):
             text_lines.append(f"  … and {more} more text changes")
         out += ["", "Text", "```diff"] + text_lines + ["```"]
 
-    img_lines = [f"+ {short_img(u)}" for u in d["img_added"][:max_img]]
-    img_lines += [f"- {short_img(u)}" for u in d["img_removed"][:max_img]]
+    # attached images are <wrapped> (Discord already shows them inline), new images that could not be
+    # attached are plain links so Discord shows a preview
+    img_lines = [f"NEW <{u}> (attached)" if u in attached else f"NEW {u}" for u in d["img_added"][:max_img]]
+    img_lines += [f"REMOVED <{u}> (attached)" if u in attached else f"REMOVED <{u}>"
+                  for u in d["img_removed"][:max_img]]
     extra = max(0, len(d["img_added"]) - max_img) + max(0, len(d["img_removed"]) - max_img)
     if extra:
-        img_lines.append(f"  … and {extra} more images")
+        img_lines.append(f"… and {extra} more images (all of them are in the attached previews)")
     if img_lines:
-        out += ["", "Images", "```diff"] + img_lines + ["```"]
-    out += ["", "Attached: before and after previews (download and open in a browser)."]
+        out += ["", "Images"] + img_lines
+    if exact:
+        out += ["", "Attached: exact copies of the page, before and after (download and open in a browser). "
+                    "All images and the full list of changes are at the very bottom of each file."]
+    else:
+        out += ["", "Attached: before and after previews (download and open in a browser)."]
     return "\n".join(out)
 
 
-def build_message(name, url, stamp, d, kind="changed", limit=1850):
-    max_text, max_img, max_meta = 12, 6, 4
+def build_message(name, url, stamp, d, kind="changed", limit=1850, attached=frozenset(), exact=False):
+    max_text, max_img, max_meta = 12, 4, 4
     while True:
-        msg = _compose(name, url, stamp, d, kind, max_text, max_img, max_meta)
+        msg = _compose(name, url, stamp, d, kind, max_text, max_img, max_meta, attached, exact)
         if len(msg) <= limit:
             return msg
         if max_text > 2:
@@ -387,7 +419,7 @@ def _line_html(kind, text, other, side):
     return esc(_plain(text))
 
 
-def render_preview(name, url, side, stamp, d, highlight=True, note=""):
+def render_preview(name, url, side, stamp, d, highlight=True, note="", embed=None):
     """One self-contained HTML page showing the page content as it was (before) or is (after)."""
     om, oi, _ = d["old"]
     nm, ni, _ = d["new"]
@@ -433,9 +465,9 @@ def render_preview(name, url, side, stamp, d, highlight=True, note=""):
         badge = f'<span class="badge">{"REMOVED" if side == "before" else "NEW"}</span>' if flagged else ""
         cards.append(
             f'<div class="card{cls}"{aid}><a href="{esc(u)}" target="_blank" rel="noreferrer">'
-            f'<img src="{esc(u)}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="{ONERR}">'
+            f'<img src="{esc((embed or {}).get(u, u))}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="{ONERR}">'
             f'<div class="noimg">image unavailable</div></a>'
-            f'<div class="cap">{badge}{esc(short_img(u))}</div></div>')
+            f'<div class="cap">{badge}<a href="{esc(u)}" target="_blank" rel="noreferrer">{esc(u)}</a></div></div>')
 
     c = d["counts"]
     summary = _summary(d) if highlight else "full page content"
@@ -460,22 +492,199 @@ def render_preview(name, url, side, stamp, d, highlight=True, note=""):
 """
 
 
+# ---------------------------------------------------------------- exact copies of pages
+def prepare_copy(raw, url):
+    """Turn saved page HTML into a standalone file that looks like the live page when opened offline:
+    scripts removed (they would re-render or break the page), lazy-loaded images switched on,
+    and a <base> tag so relative stylesheets and images still load from the original site."""
+    s = re.sub(r"<script\b.*?</script\s*>", "", raw, flags=re.S | re.I)
+    s = re.sub(r"<meta\b[^>]*http-equiv\s*=\s*[\"']?content-security-policy[^>]*>", "", s, flags=re.I)
+
+    def lazy(m):
+        tag = m.group(0)
+        for lazy_attr, real in (("data-src", "src"), ("data-srcset", "srcset")):
+            mm = re.search(rf'\s{lazy_attr}\s*=\s*"([^"]*)"', tag, re.I)
+            if not mm:
+                continue
+            val = mm.group(1)
+            if re.search(rf'\s{real}\s*=\s*"[^"]*"', tag, re.I):
+                tag = re.sub(rf'(\s{real}\s*=\s*)"[^"]*"', lambda g: f'{g.group(1)}"{val}"', tag, count=1, flags=re.I)
+            else:
+                tag = re.sub(r"^<(img|source)\b", lambda g: f'<{g.group(1)} {real}="{val}"', tag, count=1, flags=re.I)
+        return tag
+    s = re.sub(r"<(?:img|source)\b[^>]*>", lazy, s, flags=re.I)
+    inject = f'<meta charset="utf-8"><base href="{esc(url)}">'
+    m = re.search(r"<head\b[^>]*>", s, re.I)
+    return (s[:m.end()] + inject + s[m.end():]) if m else (inject + s)
+
+
+REPORT_CSS = """
+#psw{all:initial;display:block;flex:0 0 100%;width:100%;clear:both;position:relative;z-index:2147483000;background:#fff;color:#1c1c21;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:28px 24px 56px;border-top:8px solid #888;box-sizing:border-box;text-align:left}
+#psw *{box-sizing:border-box;font-family:inherit;float:none;position:static;transform:none;max-width:100%}
+#psw.before{border-top-color:#d93a3f}#psw.after{border-top-color:#238c42}
+#psw h1{display:block;margin:0 0 6px;font-size:24px;line-height:1.3;font-weight:700;color:#1c1c21;text-transform:none;letter-spacing:0}
+#psw h2{display:block;margin:30px 0 10px;padding-bottom:6px;font-size:19px;line-height:1.3;font-weight:700;color:#1c1c21;border-bottom:1px solid #dcdce3;text-transform:none;letter-spacing:0}
+#psw h3{display:block;margin:20px 0 8px;font-size:16px;font-weight:700;color:#1c1c21;text-transform:none;letter-spacing:0}
+#psw p,#psw .sub{display:block;margin:4px 0;font-size:14px;color:#55555f}
+#psw a{color:#0a58ca;text-decoration:underline;word-break:break-all}
+#psw .tag{display:inline-block;padding:2px 12px;border-radius:6px;color:#fff;background:#666;font-size:16px;letter-spacing:.06em;vertical-align:middle}
+#psw.before .tag{background:#d93a3f}#psw.after .tag{background:#238c42}
+#psw .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+#psw .card{display:block;border:3px solid #dcdce3;border-radius:8px;overflow:hidden;background:#f4f4f7}
+#psw .card.del{border-color:#d93a3f}#psw .card.ins{border-color:#238c42}
+#psw .card img{display:block;width:100%;height:130px;object-fit:cover;margin:0;border:0}
+#psw .noimg{display:none;height:130px;align-items:center;justify-content:center;color:#6b6b76;font-size:13px}
+#psw .cap{display:block;padding:6px 8px;font-size:12px;color:#55555f;word-break:break-all}
+#psw .badge{display:inline-block;margin-right:6px;padding:0 6px;border-radius:4px;font-weight:700;color:#fff;background:#666}
+#psw .card.del .badge{background:#d93a3f}#psw .card.ins .badge{background:#238c42}
+#psw table{display:table;border-collapse:collapse;width:100%;margin:0}
+#psw td{display:table-cell;padding:6px 10px;border-bottom:1px solid #dcdce3;vertical-align:top;word-break:break-word;font-size:14px;color:#1c1c21}
+#psw td.k{color:#6b6b76;white-space:nowrap;width:1%}
+#psw .line{display:block;margin:3px 0;padding:5px 10px;border-radius:4px;font-size:14px;color:#1c1c21;word-break:break-word}
+#psw .line.del{background:#fde9e9;box-shadow:inset 4px 0 #d93a3f}
+#psw .line.ins{background:#e4f6e8;box-shadow:inset 4px 0 #238c42}
+#psw .line.chg{background:#fff6d9;box-shadow:inset 4px 0 #d9a400}
+#psw del{background:#d93a3f;color:#fff;text-decoration:line-through;border-radius:3px;padding:0 2px}
+#psw ins{background:#238c42;color:#fff;text-decoration:none;border-radius:3px;padding:0 2px}
+#psw .imgrow{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
+#psw .thumb{display:block;width:90px;height:60px;object-fit:cover;border-radius:4px;flex:0 0 auto}
+#psw .none{display:block;color:#6b6b76;font-style:italic;margin:6px 0}
+"""
+
+
+def _gallery(imgs, flagged, side, embed):
+    own = "del" if side == "before" else "ins"
+    word = "REMOVED" if side == "before" else "NEW"
+    cards = []
+    for u in imgs:
+        hit = u in flagged
+        cards.append(
+            f'<div class="card{" " + own if hit else ""}"><a href="{esc(u)}" target="_blank" rel="noreferrer">'
+            f'<img src="{esc(embed.get(u, u))}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="{ONERR}">'
+            f'<div class="noimg">image unavailable</div></a>'
+            f'<div class="cap">{f"<span class=badge>{word}</span>" if hit else ""}'
+            f'<a href="{esc(u)}" target="_blank" rel="noreferrer">{esc(u)}</a></div></div>')
+    return "".join(cards)
+
+
+def _changes(side, d, embed):
+    """The 'what was removed' (before file) / 'what was added' (after file) section."""
+    before = side == "before"
+    word = "Removed" if before else "Added"
+    rows = d["rows_old"] if before else d["rows_new"]
+    imgs = d["img_removed"] if before else d["img_added"]
+    out = [f"<h2>{word} (everything that changed on this page)</h2>"]
+
+    meta_rows = []
+    for k, ov, nv in d["meta"]:
+        mine, other = (ov, nv) if before else (nv, ov)
+        if mine is None:
+            continue
+        if other is None:
+            vhtml = _value_html(mine)
+        else:
+            ha, hb = word_diff_html(ov, nv)
+            vhtml = ha if before else hb
+        meta_rows.append(f'<tr><td class="k">{esc(k)}</td><td>{vhtml}</td></tr>')
+    if meta_rows:
+        out.append(f"<h3>Page info ({len(meta_rows)})</h3><table>{''.join(meta_rows)}</table>")
+
+    lines = [f'<div class="line {kind}">{_line_html(kind, text, other, side)}</div>'
+             for kind, text, other in rows if kind != "same"]
+    if lines:
+        out.append(f"<h3>Text ({len(lines)} lines)</h3>{''.join(lines)}")
+
+    if imgs:
+        items = "".join(
+            f'<div class="imgrow"><img class="thumb" src="{esc(embed.get(u, u))}" referrerpolicy="no-referrer" alt="" '
+            f'onerror="this.style.visibility=\'hidden\'"><a href="{esc(u)}" target="_blank" rel="noreferrer">{esc(u)}</a></div>'
+            for u in imgs)
+        out.append(f"<h3>Images ({len(imgs)})</h3>{items}")
+
+    if not (meta_rows or lines or imgs):
+        out.append(f'<span class="none">Nothing was {word.lower()}.</span>')
+    return "".join(out)
+
+
+def _report(side, name, url, stamp, d, embed, imgs, note, highlight, what):
+    tag = "BEFORE" if side == "before" else "AFTER"
+    flagged = set(d["img_removed"] if side == "before" else d["img_added"]) if highlight else set()
+    out = [f'<style>{REPORT_CSS}</style><div id="psw" class="{side}">',
+           f'<h1><span class="tag">{tag}</span> {esc(name)}</h1>',
+           f'<p class="sub">{esc(what)} ({esc(stamp)}) <a href="{esc(url)}" target="_blank" rel="noreferrer">{esc(url)}</a></p>']
+    if note:
+        out.append(f'<p class="sub">{esc(note)}</p>')
+    out.append(f'<h2>All images on this page ({len(imgs)})</h2><div class="grid">{_gallery(imgs, flagged, side, embed)}</div>')
+    if highlight:
+        out.append(_changes(side, d, embed))
+    out.append("</div>")
+    return "".join(out)
+
+
+def copy_file(side, raw, url, name, stamp, d, embed=None, note="", prepared=False, highlight=True, what=None):
+    """The page itself, exactly as saved, with an extra section added at the very end: every image on
+    the page, then (before file) what was removed or (after file) what was added."""
+    embed = embed or {}
+    page = raw if prepared else prepare_copy(raw, url)
+    what = what or ("Exact copy of the page as it was before the change" if side == "before"
+                    else "Exact copy of the page as it is now")
+    imgs = image_urls(raw)
+    report = _report(side, name, url, stamp, d, embed, imgs, note, highlight, what)
+    i = page.lower().rfind("</body>")
+    page = (page[:i] + report + page[i:]) if i != -1 else (page + report)
+    return page.encode("utf-8")
+
+
 # ---------------------------------------------------------------- alert builders
 def file_stub(name):
     return re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-")[:60] or "page"
 
 
-def change_alert(name, url, stamp, old_text, new_text, kind="changed", note="", stub=None):
+def change_alert(name, url, stamp, old_text, new_text, kind="changed", note="", stub=None, images=None,
+                 raw_before=None, raw_after=None, prepared=False):
+    """images: optional {url: bytes} for changed images (attached to the Discord message and embedded in
+    the files). raw_before / raw_after: the page HTML before and after, which gives exact copies; without
+    both, a rebuilt preview is attached instead."""
     d = compare(old_text, new_text)
     stub = file_stub(stub or name)
-    return {
-        "text": build_message(name, url, stamp, d, kind),
-        "files": [(f"{stub}_before.html", render_preview(name, url, "before", stamp, d, note=note).encode()),
-                  (f"{stub}_after.html", render_preview(name, url, "after", stamp, d, note=note).encode())],
-    }
+    images = images or {}
+    extras, attached, used = [], set(), 0
+    for label, urls in (("new", d["img_added"]), ("removed", d["img_removed"])):
+        n = 0
+        for u in urls:
+            data = images.get(u)
+            if not data or n >= MAX_ATTACH or used + len(data) > ATTACH_BYTES:
+                continue
+            mime, ext = sniff(data)
+            if mime == "application/octet-stream":
+                continue
+            base = urlsplit(u).path.rstrip("/").split("/")[-1].rpartition(".")[0] or "image"
+            extras.append((f"{label}_{n + 1}_{file_stub(base)[:40]}{ext}", data))
+            attached.add(u)
+            used += len(data)
+            n += 1
+    embed, tot = {}, 0
+    for u in d["img_added"] + d["img_removed"]:
+        data = images.get(u)
+        if not data or len(data) > EMBED_ONE or tot + len(data) > EMBED_TOTAL:
+            continue
+        mime, _ = sniff(data)
+        if mime != "application/octet-stream":
+            embed[u] = f"data:{mime};base64," + base64.b64encode(data).decode()
+            tot += len(data)
+    exact = bool(raw_before and raw_after)
+    if exact:
+        files = [(f"{stub}_before.html", copy_file("before", raw_before, url, name, stamp, d, embed, note, prepared)),
+                 (f"{stub}_after.html", copy_file("after", raw_after, url, name, stamp, d, embed, note, prepared))]
+    else:
+        n2 = (note + " " if note else "") + "(No saved copy of the earlier version yet, so this is a rebuilt preview, not an exact copy.)"
+        files = [(f"{stub}_before.html", render_preview(name, url, "before", stamp, d, note=n2, embed=embed).encode()),
+                 (f"{stub}_after.html", render_preview(name, url, "after", stamp, d, note=n2, embed=embed).encode())]
+    return {"text": build_message(name, url, stamp, d, kind, attached=attached, exact=exact),
+            "files": files, "extra": extras}
 
 
-def live_alert(name, url, stamp, new_text, note=""):
+def live_alert(name, url, stamp, new_text, note="", raw=None):
     d = compare("", new_text)
     meta, imgs, lines = d["new"]
     title = meta.get("og:title") or meta.get("title") or ""
@@ -486,16 +695,23 @@ def live_alert(name, url, stamp, new_text, note=""):
     out.append(f"{len(lines)} text lines, {len(imgs)} images")
     if body:
         out += ["", "```"] + [cut(_plain(l), 150) for l in body] + ["```"]
-    out += ["", "Attached: full page preview (download and open in a browser)."]
-    return {"text": "\n".join(out)[:1850],
-            "files": [(f"{file_stub(name)}_live.html",
-                       render_preview(name, url, "after", stamp, d, highlight=False, note=note).encode())]}
+    if raw:
+        out += ["", "Attached: exact copy of the page (download and open in a browser). All images are at the very bottom."]
+        data = copy_file("after", raw, url, name, stamp, d, {}, note, highlight=False)
+    else:
+        out += ["", "Attached: full page preview (download and open in a browser)."]
+        data = render_preview(name, url, "after", stamp, d, highlight=False, note=note).encode()
+    return {"text": "\n".join(out)[:1850], "files": [(f"{file_stub(name)}_live.html", data)]}
 
 
-def gone_alert(name, url, stamp, old_text, status="404", note=""):
+def gone_alert(name, url, stamp, old_text, status="404", note="", raw=None):
     d = compare(old_text, "")
     files = []
-    if old_text:
+    if raw:
+        files = [(f"{file_stub(name)}_last_seen.html",
+                  copy_file("before", raw, url, name, stamp, d, {}, note, highlight=False,
+                            what="Exact copy of the last version we saw"))]
+    elif old_text:
         files = [(f"{file_stub(name)}_last_seen.html",
                   render_preview(name, url, "before", stamp, d, highlight=False, note=note).encode())]
     out = [f"**{name}** is gone (HTTP {status}) ({stamp})", url]
@@ -505,13 +721,46 @@ def gone_alert(name, url, stamp, old_text, status="404", note=""):
 
 
 # ---------------------------------------------------------------- Discord delivery
+def split_text(text, limit=1900):
+    """Split a long message at line boundaries into chunks that fit Discord's limit, keeping ``` blocks balanced."""
+    if len(text) <= limit:
+        return [text]
+    room = limit - 8                       # keeps space for a closing fence
+    lines = []
+    for raw in text.split("\n"):
+        while len(raw) > room - 40:        # one very long line: hard split it
+            lines.append(raw[:room - 40])
+            raw = raw[room - 40:]
+        lines.append(raw)
+    chunks, cur, size, fence = [], [], 0, None
+
+    def flush():
+        nonlocal cur, size
+        chunks.append("\n".join(cur) + ("\n```" if fence else ""))
+        cur = [fence] if fence else []
+        size = sum(len(x) + 1 for x in cur)
+
+    for line in lines:
+        if cur and size + len(line) + 1 > room:
+            flush()
+        cur.append(line)
+        size += len(line) + 1
+        if line.strip().startswith("```"):
+            fence = None if fence else line.strip()
+    if cur:
+        chunks.append("\n".join(cur))
+    return chunks
+
+
 def _multipart(payload, files):
     b = uuid.uuid4().hex
     body = (f'--{b}\r\nContent-Disposition: form-data; name="payload_json"\r\n'
             f'Content-Type: application/json\r\n\r\n').encode() + json.dumps(payload).encode() + b"\r\n"
     for i, (fname, data) in enumerate(files):
-        body += (f'--{b}\r\nContent-Disposition: form-data; name="files[{i}]"; filename="{fname}"\r\n'
-                 f'Content-Type: text/html\r\n\r\n').encode() + data + b"\r\n"
+        ctype = mimetypes.guess_type(fname)[0] or "application/octet-stream"
+        head = (f'--{b}\r\nContent-Disposition: form-data; name="files[{i}]"; filename="{fname}"\r\n'
+                f'Content-Type: {ctype}\r\n\r\n')
+        body += head.encode() + data + b"\r\n"
     body += f"--{b}--\r\n".encode()
     return body, f"multipart/form-data; boundary={b}"
 
@@ -543,21 +792,26 @@ def _post(hook, payload, files):
 
 
 def send_alerts(alerts, ping_text="@everyone"):
-    """Print every alert to the log and send each one to Discord (the first one pings)."""
+    """Print every alert to the log and send each one to Discord. Every alert pings; long ones are split
+    into several messages (only the first pings and carries the attachments), nothing is cut off."""
     hook = os.environ.get("DISCORD_WEBHOOK_URL")
-    for i, a in enumerate(alerts):
-        print(a["text"] + ("\n[attachments: " + ", ".join(f for f, _ in a["files"]) + "]" if a["files"] else ""),
-              flush=True)
+    for a in alerts:
+        files = a["files"] + a.get("extra", [])
+        print(a["text"] + ("\n[attachments: " + ", ".join(f for f, _ in files) + "]" if files else ""), flush=True)
         print("-" * 40)
         if not hook:
             continue
-        ping = (ping_text + "\n") if (ping_text and i == 0) else ""
-        payload = {"content": (ping + a["text"])[:2000]}
-        payload["allowed_mentions"] = {"parse": ["everyone"] if ping else []}
-        files = a["files"]
-        if sum(len(d) for _, d in files) > 7_500_000:  # stay under Discord's upload limit
+        ping = (ping_text + "\n") if ping_text else ""
+        text = a["text"]
+        if sum(len(d) for _, d in files) > UPLOAD_LIMIT:  # too big: drop the image attachments first
+            files = a["files"]
+        if sum(len(d) for _, d in files) > UPLOAD_LIMIT:
             files = []
-            payload["content"] = (payload["content"] + "\n(previews too large to attach)")[:2000]
-        if not _post(hook, payload, files) and files:  # retry without the files so the alert still lands
-            _post(hook, payload, [])
-        time.sleep(1)
+            text += "\n(previews too large to attach)"
+        for i, part in enumerate(split_text(text)):
+            payload = {"content": ((ping if i == 0 else "") + part)[:2000]}
+            payload["allowed_mentions"] = {"parse": ["everyone"] if (ping and i == 0) else []}
+            send_files = files if i == 0 else []
+            if not _post(hook, payload, send_files) and send_files:  # retry without files so the alert still lands
+                _post(hook, payload, [])
+            time.sleep(1)

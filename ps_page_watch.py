@@ -12,8 +12,12 @@ Two kinds of watching:
   KEYWORD_WATCH  only GTA-related stuff (see KEYWORDS): links, text lines and image URLs that
                  mention it. Alerts when those appear or disappear, ignores everything else.
 
-Every alert is a readable summary plus two attached HTML files (before and after) with the
-differences highlighted. Pages that return 404 (not live yet) are remembered and you get a
+Every alert is a readable summary plus two attached HTML files: an exact copy of the page before and
+after (the last saved copy lives in snapshots/), with every image and the list of changes added at the
+very end of each file. Rebuilt-preview fallback if no earlier copy exists. The
+differences listed at the bottom. Changed images are attached to the alert too, and every image the pages
+use is saved into an images/ folder next to this script (so the workflow commits it to the repo),
+which keeps images viewable after PlayStation removes them. Pages that return 404 (not live yet) are remembered and you get a
 "now LIVE" alert the moment they appear. First run just saves a baseline.
 """
 import hashlib
@@ -25,10 +29,10 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from ps_common import (UA, change_alert, gone_alert, image_urls, live_alert, parse_meta,
-                       send_alerts, to_lines)
+                       parse_snapshot, send_alerts, sniff, to_lines)
 
 WATCH = {
     "ps-gta6-page": "https://www.playstation.com/en-us/games/grand-theft-auto-vi/",
@@ -55,6 +59,15 @@ PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 CONFIRM = False       # True = require the change on 2 consecutive runs before alerting
 SNAP_V = 2            # bump when the snapshot format changes (triggers a silent re-baseline)
 MAX_STATE = 150_000   # max chars of page text kept in the state file
+
+SNAP_DIR = Path(__file__).with_name("snapshots")   # last saved HTML of each page (the "before" copy)
+MAX_RAW = 2_000_000          # pages bigger than this are not saved as exact copies
+
+ARCHIVE_IMAGES = True        # True = save every image into images/ (committed to the repo by the workflow)
+IMAGE_DIR = Path(__file__).with_name("images")
+MAX_IMG_BYTES = 8_000_000    # skip images bigger than this
+MAX_DOWNLOADS_PER_RUN = 40   # archive in batches so the first run doesn't take forever
+MAX_ARCHIVE_MB = 300         # stop saving new images once the archive reaches this size
 
 # meta tags that change on every deploy and aren't real content changes
 IGNORE_META = {"wca-ssr-version", "wca-theme", "viewport", "next-head-count",
@@ -107,7 +120,7 @@ def snapshot(url):
     if len(lines) < 5:  # basically empty page (blocked / JS-only), don't trust it
         return {"status": "empty"}
     return {"status": "ok", "v": SNAP_V, "hash": hashlib.sha1(text.encode()).hexdigest(),
-            "text": text[:MAX_STATE]}
+            "text": text[:MAX_STATE], "_raw": body}
 
 
 def keyword_snapshot(url):
@@ -118,7 +131,119 @@ def keyword_snapshot(url):
         return {"status": "empty"}
     text = "\n".join(keyword_lines(body, url))
     return {"status": "ok", "v": SNAP_V, "mode": "keywords",
-            "hash": hashlib.sha1(text.encode()).hexdigest(), "text": text[:MAX_STATE]}
+            "hash": hashlib.sha1(text.encode()).hexdigest(), "text": text[:MAX_STATE], "_raw": body}
+
+
+def download(url):
+    """Image bytes, or None if it can't be fetched, is too big, or isn't really an image."""
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "image/*,*/*;q=0.8"})
+    try:
+        with urllib.request.urlopen(req, timeout=25) as r:
+            data = r.read(MAX_IMG_BYTES + 1)
+    except Exception:
+        return None
+    if not data or len(data) > MAX_IMG_BYTES or sniff(data)[0] == "application/octet-stream":
+        return None
+    return data
+
+
+class Archive:
+    """Saves every image we see into images/ (plus images/index.json) and hands out the bytes."""
+
+    def __init__(self):
+        self.index, self.cache, self.new_saved, self.dirty = {}, {}, 0, False
+        if ARCHIVE_IMAGES:
+            try:
+                self.index = json.loads((IMAGE_DIR / "index.json").read_text())
+            except Exception:
+                self.index = {}
+        self.total = sum(e.get("bytes", 0) for e in self.index.values())
+
+    def get(self, url):
+        if url in self.cache:
+            return self.cache[url]
+        e = self.index.get(url) or {}
+        if e.get("file"):
+            try:
+                self.cache[url] = (IMAGE_DIR / e["file"]).read_bytes()
+                return self.cache[url]
+            except OSError:
+                pass  # saved file went missing, try downloading again
+        elif e.get("failed", 0) >= 3 or urlsplit(url).path in ("", "/"):
+            return None  # gave up on this one (dead link or just a bare domain)
+        data = download(url)
+        if data is None:
+            if ARCHIVE_IMAGES and urlsplit(url).path not in ("", "/"):
+                self.index.setdefault(url, {})["failed"] = e.get("failed", 0) + 1
+                self.dirty = True
+            return None
+        self.cache[url] = data
+        if ARCHIVE_IMAGES and self.total + len(data) <= MAX_ARCHIVE_MB * 1_000_000:
+            fname = hashlib.sha1(url.encode()).hexdigest()[:16] + sniff(data)[1]
+            IMAGE_DIR.mkdir(exist_ok=True)
+            (IMAGE_DIR / fname).write_bytes(data)
+            self.index[url] = {"file": fname, "bytes": len(data)}
+            self.total += len(data)
+            self.new_saved += 1
+            self.dirty = True
+        return data
+
+    def archive_many(self, urls, limit):
+        done = 0
+        for u in urls:
+            e = self.index.get(u) or {}
+            if u in self.cache or e.get("file") or e.get("failed", 0) >= 3:
+                continue
+            if done >= limit:
+                break
+            self.get(u)
+            done += 1
+
+    def save(self):
+        if ARCHIVE_IMAGES and self.dirty:
+            IMAGE_DIR.mkdir(exist_ok=True)
+            (IMAGE_DIR / "index.json").write_text(json.dumps(self.index, indent=1, sort_keys=True))
+
+    def summary(self):
+        if not ARCHIVE_IMAGES:
+            return "image archive off"
+        saved = sum(1 for e in self.index.values() if e.get("file"))
+        dead = sum(1 for e in self.index.values() if not e.get("file") and e.get("failed", 0) >= 3)
+        return (f"images: {self.new_saved} saved this run, {saved} in archive ({self.total / 1e6:.1f} MB)"
+                + (f", {dead} unreachable" if dead else ""))
+
+    def images_for(self, old_text, new_text):
+        """Bytes for the images that were added or removed between two snapshots."""
+        _, oi, _ = parse_snapshot(old_text)
+        _, ni, _ = parse_snapshot(new_text)
+        changed = [u for u in ni if u not in set(oi)][:12] + [u for u in oi if u not in set(ni)][:12]
+        out = {}
+        for u in changed:
+            data = self.get(u)
+            if data:
+                out[u] = data
+        return out
+
+
+def save_raw(name, raw):
+    """Keep the page HTML so the next change can show an exact 'before' copy."""
+    if not raw or len(raw) > MAX_RAW:
+        return
+    path = SNAP_DIR / f"{name}.html"
+    try:
+        if path.exists() and path.read_text(encoding="utf-8") == raw:
+            return
+        SNAP_DIR.mkdir(exist_ok=True)
+        path.write_text(raw, encoding="utf-8")
+    except OSError as e:
+        print(f"[{name}] could not save page copy: {e}", file=sys.stderr)
+
+
+def load_raw(name):
+    try:
+        return (SNAP_DIR / f"{name}.html").read_text(encoding="utf-8")
+    except OSError:
+        return None
 
 
 def load_state():
@@ -139,8 +264,10 @@ def main():
     state = load_state()
     stamp = datetime.now(LOCAL_TZ).strftime("%d %b %H:%M") + " AWST"
     alerts, baselined, notes, pending = [], [], [], []
+    arch, current_urls = Archive(), []
     for name, url, snap, note in targets():
         new = snap(url)
+        raw = new.pop("_raw", None)
         status = new["status"]
         old = state.get(name)
 
@@ -148,7 +275,8 @@ def main():
             if old and old.get("status") == "ok":
                 old["miss"] = old.get("miss", 0) + 1  # needs 2 misses in a row, avoids blips
                 if old["miss"] >= 2:
-                    alerts.append(gone_alert(name, url, stamp, old.get("text", ""), status[5:], note))
+                    alerts.append(gone_alert(name, url, stamp, old.get("text", ""), status[5:], note,
+                                             raw=load_raw(name)))
                     state[name] = {"status": "missing", "text": old.get("text", "")}
             elif not old:
                 state[name] = {"status": "missing"}
@@ -157,34 +285,47 @@ def main():
         if status != "ok":
             print(f"[{name}] {status} (skipped)", file=sys.stderr)
             continue
+        current_urls += parse_snapshot(new["text"])[1]
 
         if old and old.get("status") == "missing":  # it just appeared
             if old.get("text"):
-                alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "is back", note))
+                alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "is back", note,
+                                           images=arch.images_for(old["text"], new["text"]),
+                                           raw_before=load_raw(name), raw_after=raw))
             else:
-                alerts.append(live_alert(name, url, stamp, new["text"], note))
+                alerts.append(live_alert(name, url, stamp, new["text"], note, raw=raw))
             state[name] = new
+            save_raw(name, raw)
             continue
         if old:
             old.pop("miss", None)
         if not old or old.get("status") != "ok" or old.get("v") != SNAP_V:
             state[name] = new
+            save_raw(name, raw)
             n = len(new["text"].splitlines()) if new.get("mode") == "keywords" else None
             baselined.append(name if n is None else f"{name} ({n} GTA matches)")
             continue
         if new["hash"] == old["hash"]:
             old.pop("pending", None)  # change flipped back, ignore it
+            if not (SNAP_DIR / f"{name}.html").exists():
+                save_raw(name, raw)  # first run after upgrading: save the copy we will compare against later
             continue
         if CONFIRM and old.get("pending") != new["hash"]:
             old["pending"] = new["hash"]  # first sighting, wait for the next run
             pending.append(name)
             continue
-        alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "changed", note))
+        alerts.append(change_alert(name, url, stamp, old["text"], new["text"], "changed", note,
+                                   images=arch.images_for(old["text"], new["text"]),
+                                   raw_before=load_raw(name), raw_after=raw))
         state[name] = new
+        save_raw(name, raw)
 
+    arch.archive_many(list(dict.fromkeys(current_urls)), MAX_DOWNLOADS_PER_RUN)
+    arch.save()
     STATE_FILE.write_text(json.dumps(state, indent=2))
     if alerts:
         send_alerts(alerts, PING_TEXT)
+        print(f"[{stamp}] {arch.summary()}")
         return
     msgs = []
     if baselined:
@@ -192,7 +333,7 @@ def main():
     msgs += notes
     if pending:
         msgs.append(f"unconfirmed change on: {', '.join(pending)}")
-    print(f"[{stamp}] " + ("; ".join(msgs) if msgs else "no changes"))
+    print(f"[{stamp}] " + "; ".join((msgs or ["no changes"]) + [arch.summary()]))
 
 
 if __name__ == "__main__":
