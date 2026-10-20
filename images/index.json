@@ -44,7 +44,7 @@
   "file": "8f0240fbe26c8ae1.webp"
  },
  "https://gmedia.playstation.com/is/image/SIEPDC/Grand-Theft-Auto-VI-pre-order-hero-desktop-03-19jun25$en&": {
-  "failed": 1
+  "failed": 2
  },
  "https://gmedia.playstation.com/is/image/SIEPDC/Grand-Theft-Auto-VI-pre-order-hero-mobile-02-19jun25$en": {
   "bytes": 18376,
@@ -53,6 +53,10 @@
  "https://gmedia.playstation.com/is/image/SIEPDC/Plays-Best-On-Badge-01-19jun26$en": {
   "bytes": 4614,
   "file": "4e9fdfcb0eb7d1dd.webp"
+ },
+ "https://gmedia.playstation.com/is/image/SIEPDC/game-grid-16-9-default-image-01-us-24apr18": {
+  "bytes": 1038,
+  "file": "4c3792a6a3663797.webp"
  },
  "https://gmedia.playstation.com/is/image/SIEPDC/grand-theft-auto-vi-screenshot-01-en-06may25": {
   "bytes": 25218,
@@ -149,5 +153,129 @@
  "https://image.api.playstation.com/vulcan/ap/rnd/202505/0616/8ba6ef2959c1a06792600c7d4ec19cd2dec4467201fbb2c6.jpg": {
   "bytes": 975635,
   "file": "1589a92363a8d90b.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202505/0616/a3d626ccae5d05b34fb6b749be574dca91fa1bb3366ef847.jpg": {
+  "bytes": 439420,
+  "file": "58646405013a008f.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202505/0616/a527b3d5d7613984e14facb01cb1193aa750a7969a5861c8.jpg": {
+  "bytes": 647843,
+  "file": "0ef0fcc1fbf422e2.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202505/0616/b3c84f0fb852eb9c6f42b2403f03682ae2e8aeb286445266.jpg": {
+  "bytes": 846989,
+  "file": "b551717090dee0d7.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202505/0616/b9230c74f83827391d528e54dc521a744e820bc27da6a511.jpg": {
+  "bytes": 492097,
+  "file": "992f5c7f00426434.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202505/0616/f252d9477be2e9b7e291da18fee79afe6d31954e80e11f8e.jpg": {
+  "bytes": 884187,
+  "file": "4890480d7bfd2848.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/1c8e3e304f0bad2d99ffed828ad460ebe5949608cb82a5dd.png": {
+  "bytes": 814212,
+  "file": "3a6303b1c1c3d577.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/2ebe6fa868c682fcd3d7c5bc866bc95697c02aa4c8f16dc2.jpg": {
+  "bytes": 682345,
+  "file": "6a444027fc78b41f.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/4a35c9a8490c69fe89af0f52d4ac0249b230b4fdb12e8469.jpg": {
+  "bytes": 1541440,
+  "file": "39ef6f2d600c3178.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/5511e52cce0349915fad7fc29f37a1eca7f9f1de0d566d87.png": {
+  "bytes": 191206,
+  "file": "2a2aa692ceb8201f.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/9f51f0ccdb65bd29c36a0907a738c2902a712f03e2fd6470.png": {
+  "bytes": 299643,
+  "file": "7c0ff901ede3c897.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/c789bf8c0d010fb528213174be8c1b352a54d2ab02aaa387.jpg": {
+  "bytes": 1541440,
+  "file": "008ef54be06b54f5.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1818/e63f579c61876bb569825f90a925245a9a76fb398663926e.jpg": {
+  "bytes": 1209482,
+  "file": "0e811c969d690290.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1819/3c06cc290a6fbb0810a25f050933f5e6202e7da884496902.jpg": {
+  "bytes": 978537,
+  "file": "ba1b968dbf9fc7cc.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1819/3d6b90ce1ed6d36fed49919206ba1a2b8224e63014d58dab.jpg": {
+  "bytes": 1353893,
+  "file": "4e845714a78e8425.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1819/f3f45490aaf9b14352c53b5e80c5becc112a4b1fc2e878c0.jpg": {
+  "bytes": 1353893,
+  "file": "d53e43c94eab7927.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1819/f73cd287d6bbf6a95aa5a93f5a294a2614288a00af4dcdba.png": {
+  "bytes": 256145,
+  "file": "28a5d1df994f678e.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1820/b056a59db7816f2fcedb68f2e65b90275faf5a04893b09e4.jpg": {
+  "bytes": 619943,
+  "file": "6406c6f8a44e94c0.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/1b1bb3a94bbd1a8a4e7514763d016f510e24247b4d864ff6.jpg": {
+  "bytes": 919621,
+  "file": "34ef983b5bea6b32.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/1f2d0373af9f1b6bace15d7d8462ee7843b3d42452e97d37.jpg": {
+  "bytes": 894438,
+  "file": "b150f4b459b9d3cf.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/3139bd312f0bfb208738dc2b752d17c3fb9d4ad50c2c25aa.jpg": {
+  "bytes": 759503,
+  "file": "0343beef149777ad.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/5d18cf5f59260666abe5029f450ba2b5a61d996b0503e1fc.jpg": {
+  "bytes": 1334230,
+  "file": "27b0d69fa1ab06b9.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/5de51b1e1cc3d3ea85e7bd8eba993be5c0c267316ca18147.jpg": {
+  "bytes": 1084728,
+  "file": "84cd29466a10d280.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/5e641d4c505e5a7ebc604b58b5fc7c052571ef419a328637.jpg": {
+  "bytes": 1123672,
+  "file": "8615abb126db270f.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/6e2a7c7eb29de1f04c32820823f66858fbc3d9ab9adf88a9.jpg": {
+  "bytes": 948299,
+  "file": "1f110e5f0be0353b.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/9106bb2a9b8835b8f617c892edbbe46312cb2e0e3d16b480.jpg": {
+  "bytes": 1460813,
+  "file": "9e539689fe69afae.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/efe905decdf3fee4483364656968be5a3de687e5c29dd03a.jpg": {
+  "bytes": 924721,
+  "file": "e5d921fa24838516.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/1821/fc25469bbd7e674c1db234296d0697f77ab10dbd28174aba.jpg": {
+  "bytes": 591315,
+  "file": "062890ded88b933d.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/2313/2dc122bb8b96cb9735238df9d43e28111b1279939389a735.png": {
+  "bytes": 106410,
+  "file": "c7243b53c1b61ec3.jpg"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/2315/939d117f7c92cfdd07f93a1474b0eb0c196b32514007a4d6.png": {
+  "bytes": 161524,
+  "file": "dafbf2567f85fc36.png"
+ },
+ "https://image.api.playstation.com/vulcan/ap/rnd/202606/2410/c33cce26e124ba5512575a74da65b46a86facdff4dbf78f5.jpg": {
+  "bytes": 497697,
+  "file": "b3b301de09656016.jpg"
+ },
+ "https://www.esrb.org/wp-content/uploads/2019/08/privacy_certified_globe_registered.svg": {
+  "bytes": 14404,
+  "file": "817d9cd84cecf236.svg"
  }
 }
