@@ -5,6 +5,7 @@ page parsing, change diffing, readable Discord summaries and before/after HTML p
 Stdlib only. Keep this file in the same folder as the watcher scripts.
 """
 import base64
+import bisect
 import difflib
 import html
 import json
@@ -17,6 +18,7 @@ import urllib.error
 import urllib.request
 import urllib.parse
 import uuid
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit
 
@@ -35,6 +37,13 @@ IMG_RE = re.compile(
     r"""|https?://(?:image\.api|gmedia)\.playstation\.com[^\s"'<>()\\]*""", re.I)
 LINK_LINE = re.compile(r"^\[link\] (.*) -> (\S+)$")
 esc = html.escape
+
+IGNORE_PRICES = True   # price-only differences are not changes (and prices are never reported on their own)
+PRICE_ANY = re.compile(r"(?:A|AU|US|NZ|C|CA)?\$\s?\d[\d,]*(?:\.\d{1,2})?|[£€]\s?\d[\d,]*(?:\.\d{1,2})?")
+
+
+def mask_prices(text):
+    return PRICE_ANY.sub("{price}", text) if IGNORE_PRICES else text
 
 MAX_ATTACH = 4            # changed images attached to a Discord alert, per side (new / removed)
 ATTACH_BYTES = 5_000_000  # total size of attached images per alert
@@ -194,16 +203,19 @@ def _pair_lines(olds, news):
     return pairs
 
 
-def line_diff(a, b):
-    """Row lists for the old and new side ((kind, text, partner)) plus an ordered change list."""
+def line_diff(a, b, key=None):
+    """Row lists for the old and new side ((kind, text, partner)) plus an ordered change list.
+    key: optional function applied to each line before comparing (used to ignore prices)."""
+    ka = [key(x) for x in a] if key else a
+    kb = [key(x) for x in b] if key else b
     orows, nrows, changes = [], [], []
-    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, ka, kb, autojunk=False).get_opcodes():
         olds, news = a[i1:i2], b[j1:j2]
         if tag == "equal":
             orows += [("same", x, None) for x in olds]
             nrows += [("same", x, None) for x in news]
             continue
-        pairs = _pair_lines(olds, news) if (olds and news) else {}
+        pairs = _pair_lines(ka[i1:i2], kb[j1:j2]) if (olds and news) else {}
         partner_of_new = {j: i for i, j in pairs.items()}
         for i, o in enumerate(olds):
             if i in pairs:
@@ -224,10 +236,11 @@ def line_diff(a, b):
 def compare(old_text, new_text):
     om, oi, ol = parse_snapshot(old_text)
     nm, ni, nl = parse_snapshot(new_text)
-    rows_old, rows_new, changes = line_diff(ol, nl)
+    rows_old, rows_new, changes = line_diff(ol, nl, mask_prices if IGNORE_PRICES else None)
+    mv = lambda v: None if v is None else mask_prices(v)
     return {
         "old": (om, oi, ol), "new": (nm, ni, nl),
-        "meta": [(k, om.get(k), nm.get(k)) for k in sorted(set(om) | set(nm)) if om.get(k) != nm.get(k)],
+        "meta": [(k, om.get(k), nm.get(k)) for k in sorted(set(om) | set(nm)) if mv(om.get(k)) != mv(nm.get(k))],
         "img_added": [u for u in ni if u not in set(oi)],
         "img_removed": [u for u in oi if u not in set(ni)],
         "rows_old": rows_old, "rows_new": rows_new, "changes": changes,
@@ -280,9 +293,6 @@ def _meta_val(v):
 
 def _compose(name, url, stamp, d, kind, max_text, max_img, max_meta, attached=frozenset(), exact=False):
     out = [f"**{name}** {kind} ({stamp})", url, "", f"What changed: {_summary(d)}"]
-    pl = _prices_line(d)
-    if pl:
-        out.append(pl)
 
     meta_lines = []
     for k, ov, nv in d["meta"][:max_meta]:
@@ -495,11 +505,25 @@ def render_preview(name, url, side, stamp, d, highlight=True, note="", embed=Non
 
 
 # ---------------------------------------------------------------- exact copies of pages
+_INERT_TYPES = ("application/json", "application/ld+json", "text/plain", "importmap", "speculationrules")
+
+
+def _inert_script(m):
+    """Switch a <script> off (type=text/plain) without touching its contents, so the source stays searchable."""
+    tag = m.group(0)
+    tm = re.search(r'\stype\s*=\s*(?:"([^"]*)"|\'([^\']*)\'|([^\s>]+))', tag, re.I)
+    if tm and (tm.group(1) or tm.group(2) or tm.group(3) or "").lower() in _INERT_TYPES:
+        return tag
+    tag = re.sub(r'\stype\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)', "", tag, flags=re.I)
+    return re.sub(r"^<script", '<script type="text/plain"', tag, count=1, flags=re.I)
+
+
 def prepare_copy(raw, url):
-    """Turn saved page HTML into a standalone file that looks like the live page when opened offline:
-    scripts removed (they would re-render or break the page), lazy-loaded images switched on,
-    and a <base> tag so relative stylesheets and images still load from the original site."""
-    s = re.sub(r"<script\b.*?</script\s*>", "", raw, flags=re.S | re.I)
+    """Turn saved page HTML into a standalone file that looks like the live page when opened offline.
+    Nothing is deleted from the source (so every line is still searchable and keeps its line number):
+    scripts are switched off so the page can't re-render itself, lazy-loaded images are switched on,
+    the CSP tag is dropped, and a <base> tag lets stylesheets and images load from the original site."""
+    s = re.sub(r"<script\b[^>]*>", _inert_script, raw, flags=re.I)
     s = re.sub(r"<meta\b[^>]*http-equiv\s*=\s*[\"']?content-security-policy[^>]*>", "", s, flags=re.I)
 
     def lazy(m):
@@ -515,7 +539,7 @@ def prepare_copy(raw, url):
                 tag = re.sub(r"^<(img|source)\b", lambda g: f'<{g.group(1)} {real}="{val}"', tag, count=1, flags=re.I)
         return tag
     s = re.sub(r"<(?:img|source)\b[^>]*>", lazy, s, flags=re.I)
-    inject = f'<meta charset="utf-8"><base href="{esc(url)}">'
+    inject = f'<meta charset="utf-8"><meta name="referrer" content="no-referrer"><base href="{esc(url)}">'
     m = re.search(r"<head\b[^>]*>", s, re.I)
     return (s[:m.end()] + inject + s[m.end():]) if m else (inject + s)
 
@@ -551,25 +575,69 @@ REPORT_CSS = """
 #psw .imgrow{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:13px}
 #psw .thumb{display:block;width:90px;height:60px;object-fit:cover;border-radius:4px;flex:0 0 auto}
 #psw .none{display:block;color:#6b6b76;font-style:italic;margin:6px 0}
+#psw pre{display:block;margin:4px 0 12px;padding:8px 10px;background:#f4f4f7;border:1px solid #dcdce3;border-radius:6px;white-space:pre-wrap;word-break:break-all;font:12px/1.45 ui-monospace,Consolas,monospace;color:#1c1c21}
+#psw code{font:12px ui-monospace,Consolas,monospace;background:#ececf1;padding:1px 4px;border-radius:3px;color:#1c1c21}
 """
 
 
-def _gallery(imgs, flagged, side, embed):
+ONERR2 = ("var n=+this.dataset.n||0,f=(this.dataset.f||'').split('|').filter(Boolean);"
+          "if(f.length>n){this.dataset.n=n+1;this.src=f[n];}else{this.style.display='none';this.nextElementSibling.style.display='flex'}")
+
+# Runs inside the saved copy only (the page's own scripts are switched off). Fixes the usual reasons images stay
+# blank in a saved page: lazy loaders that keep the real URL in some data-* attribute, and fade-ins that only
+# JavaScript would have triggered.
+RESCUE_JS = """<script>(function(){
+function inPsw(n){return n.closest&&n.closest('#psw');}
+function swapLazy(){
+  var imgs=document.querySelectorAll('img');
+  for(var k=0;k<imgs.length;k++){var img=imgs[k];if(inPsw(img))continue;
+    var src=img.getAttribute('src')||'';
+    var ph=!src||src.indexOf('data:')===0||/placeholder|blank|spacer|pixel|1x1/i.test(src);
+    if(ph){var at=img.attributes;
+      for(var i=0;i<at.length;i++){var a=at[i];
+        if(/^data-/.test(a.name)&&/^(https?:)?\\/\\/|^\\/[^\\s]+\\.(png|jpe?g|webp|gif|avif|svg)/i.test(a.value)){
+          if(/srcset/.test(a.name)){img.setAttribute('srcset',a.value);}else{img.setAttribute('src',a.value);}break;}}}
+    try{img.loading='eager';}catch(e){}}
+}
+function unhide(){
+  var imgs=[].filter.call(document.querySelectorAll('img'),function(i){return !inPsw(i)&&i.complete&&i.naturalWidth>0;});
+  var hid=imgs.filter(function(i){return getComputedStyle(i).opacity==='0';});
+  if(hid.length>=3&&hid.length/imgs.length>=0.5){hid.forEach(function(i){i.style.opacity='1';i.style.visibility='visible';});}
+}
+function run(){swapLazy();unhide();}
+run();window.addEventListener('load',function(){run();setTimeout(run,1500);setTimeout(run,4000);});
+})();</script>"""
+
+
+def image_originals(page):
+    """{url without query: first full url as written in the page}, so previews can try the real address first."""
+    s = page.replace("\\/", "/").replace("\\u002F", "/").replace("&amp;", "&")
+    out = {}
+    for m in IMG_RE.finditer(s):
+        full = m.group(0).rstrip(".,;")
+        out.setdefault(full.split("?")[0].split("#")[0].rstrip(".,;"), full)
+    return out
+
+
+def _gallery(imgs, flagged, side, embed, origs=None, thumbs=None):
+    origs, thumbs = origs or {}, thumbs or {}
     own = "del" if side == "before" else "ins"
     word = "REMOVED" if side == "before" else "NEW"
     cards = []
     for u in imgs:
         hit = u in flagged
+        first = embed.get(u) or thumbs.get(u) or origs.get(u, u)
+        fallbacks = [x for x in (origs.get(u, u), u) if x != first]
+        badge = f"<span class=badge>{word}</span>" if hit else ""
         cards.append(
             f'<div class="card{" " + own if hit else ""}"><a href="{esc(u)}" target="_blank" rel="noreferrer">'
-            f'<img src="{esc(embed.get(u, u))}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="{ONERR}">'
+            f'<img src="{esc(first)}" data-f="{esc("|".join(fallbacks))}" loading="lazy" referrerpolicy="no-referrer" alt="" onerror="{ONERR2}">'
             f'<div class="noimg">image unavailable</div></a>'
-            f'<div class="cap">{f"<span class=badge>{word}</span>" if hit else ""}'
-            f'<a href="{esc(u)}" target="_blank" rel="noreferrer">{esc(u)}</a></div></div>')
+            f'<div class="cap">{badge}<a href="{esc(u)}" target="_blank" rel="noreferrer">{esc(u)}</a></div></div>')
     return "".join(cards)
 
 
-def _changes(side, d, embed):
+def _changes(side, d, embed, src=None):
     """The 'what was removed' (before file) / 'what was added' (after file) section."""
     before = side == "before"
     word = "Removed" if before else "Added"
@@ -603,12 +671,31 @@ def _changes(side, d, embed):
             for u in imgs)
         out.append(f"<h3>Images ({len(imgs)})</h3>{items}")
 
-    if not (meta_rows or lines or imgs):
+    blocks = []
+    for n, ch in enumerate(src or [], 1):
+        units = ch["before"] if before else ch["after"]
+        if not units:
+            continue
+        hint = ch["find_before"] if before else ch["find_after"]
+        head = f"<h3>{n}. {esc(ch['label'])}</h3>"
+        if hint:
+            head += f'<p class="sub">Search this file for: <code>{esc(hint)}</code></p>'
+        body = ""
+        for u in units:
+            w = unit_where(u["text"])
+            body += f'<p class="sub">line {u["line"]}{(", " + esc(w)) if w else ""}</p><pre>{esc(unit_show(u))}</pre>'
+        blocks.append(head + body)
+    if blocks:
+        out.append('<h2>Exact source lines</h2><p class="sub">Line numbers are lines of the page source we fetched '
+                   '(view-source). Scripts are switched off in this copy but still in the file, so you can search for them.</p>'
+                   + "".join(blocks))
+
+    if not (meta_rows or lines or imgs or blocks):
         out.append(f'<span class="none">Nothing was {word.lower()}.</span>')
     return "".join(out)
 
 
-def _report(side, name, url, stamp, d, embed, imgs, note, highlight, what):
+def _report(side, name, url, stamp, d, embed, imgs, note, highlight, what, origs=None, thumbs=None, src=None):
     tag = "BEFORE" if side == "before" else "AFTER"
     flagged = set(d["img_removed"] if side == "before" else d["img_added"]) if highlight else set()
     out = [f'<style>{REPORT_CSS}</style><div id="psw" class="{side}">',
@@ -616,25 +703,271 @@ def _report(side, name, url, stamp, d, embed, imgs, note, highlight, what):
            f'<p class="sub">{esc(what)} ({esc(stamp)}) <a href="{esc(url)}" target="_blank" rel="noreferrer">{esc(url)}</a></p>']
     if note:
         out.append(f'<p class="sub">{esc(note)}</p>')
-    out.append(f'<h2>All images on this page ({len(imgs)})</h2><div class="grid">{_gallery(imgs, flagged, side, embed)}</div>')
+    out.append(f'<h2>All images on this page ({len(imgs)})</h2>'
+               f'<div class="grid">{_gallery(imgs, flagged, side, embed, origs, thumbs)}</div>')
     if highlight:
-        out.append(_changes(side, d, embed))
+        out.append(_changes(side, d, embed, src))
     out.append("</div>")
     return "".join(out)
 
 
-def copy_file(side, raw, url, name, stamp, d, embed=None, note="", prepared=False, highlight=True, what=None):
-    """The page itself, exactly as saved, with an extra section added at the very end: every image on
-    the page, then (before file) what was removed or (after file) what was added."""
+OUTER_CSS = """
+html,body{margin:0;padding:0;background:#fff}
+#pswbar{position:fixed;top:0;left:0;right:0;height:40px;z-index:10;display:flex;align-items:center;gap:12px;padding:0 14px;background:#f4f4f7;border-bottom:4px solid #888;font:14px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#1c1c21;box-sizing:border-box}
+#pswbar.before{border-bottom-color:#d93a3f}#pswbar.after{border-bottom-color:#238c42}
+#pswbar .tag{padding:2px 10px;border-radius:6px;color:#fff;background:#666;font-weight:700;letter-spacing:.06em}
+#pswbar.before .tag{background:#d93a3f}#pswbar.after .tag{background:#238c42}
+#pswbar span.sm{color:#6b6b76}
+#pswbar a{color:#0a58ca;margin-left:auto}
+#pagecopy{display:block;width:100%;height:calc(92vh - 40px);margin:40px 0 0;border:0;background:#fff}
+"""
+
+
+def copy_file(side, raw, url, name, stamp, d, embed=None, note="", prepared=False, highlight=True, what=None,
+              src=None, thumbs=None):
+    """The page itself, exactly as saved, in a frame of its own (so its layout can never collide with anything
+    else), followed by a section with every image on the page and then (before file) what was removed or
+    (after file) what was added, with the exact source lines. The page source starts on line 1 of the file,
+    so its line numbers are the line numbers of the original page source."""
     embed = embed or {}
     page = raw if prepared else prepare_copy(raw, url)
+    i = page.lower().rfind("</body>")
+    framed = (page[:i] + RESCUE_JS + page[i:]) if i != -1 else (page + RESCUE_JS)
+    srcdoc = framed.replace("&", "&amp;").replace('"', "&quot;")
     what = what or ("Exact copy of the page as it was before the change" if side == "before"
                     else "Exact copy of the page as it is now")
     imgs = image_urls(raw)
-    report = _report(side, name, url, stamp, d, embed, imgs, note, highlight, what)
-    i = page.lower().rfind("</body>")
-    page = (page[:i] + report + page[i:]) if i != -1 else (page + report)
-    return page.encode("utf-8")
+    report = _report(side, name, url, stamp, d, embed, imgs, note, highlight, what, image_originals(raw), thumbs, src)
+    tag = "BEFORE" if side == "before" else "AFTER"
+    bar = (f'<div id="pswbar" class="{side}"><span class="tag">{tag}</span><b>{esc(name)}</b>'
+           f'<span class="sm">exact copy of the page below, scroll inside it</span>'
+           f'<a href="#psw">Jump to all images and what changed</a></div>')
+    out = ('<meta charset="utf-8"><iframe id="pagecopy" referrerpolicy="no-referrer" srcdoc="' + srcdoc + '"></iframe>'
+           f'<style>{OUTER_CSS}</style><title>{esc(name)} {tag.lower()}</title>{bar}{report}')
+    return out.encode("utf-8")
+
+
+# ---------------------------------------------------------------- exact source lines
+UNIT_CUT = re.compile(r'(?<=>)(?=<)|(?<=,)(?=")|\n')   # between tags, between JSON properties, at line breaks
+_JSON_U = re.compile(r"\\u([0-9a-fA-F]{4})")
+_TOK = re.compile(r"[A-Za-z0-9]+")
+
+
+def unesc(t):
+    t = _JSON_U.sub(lambda m: chr(int(m.group(1), 16)), t)
+    return html.unescape(t.replace('\\"', '"').replace("\\/", "/"))
+
+
+def toks(t):
+    return [x.lower() for x in _TOK.findall(unesc(t))]
+
+
+def strip_prices(t):
+    return PRICE_ANY.sub(" ", t) if IGNORE_PRICES else t
+
+
+def unit_plain(t):
+    t = re.sub(r"<[^>]+>", " ", unesc(t))
+    t = re.sub(r'^\s*"[^"]+"\s*:', "", t)
+    return " ".join(re.sub(r'["\[\]{},]+', " ", t).lower().split())
+
+
+def src_units(raw):
+    """The page source cut into its smallest self-contained pieces: an opening tag with its text, or one
+    JSON "key":"value" pair. Each piece keeps the line number it sits on in the source (as in view-source)."""
+    nl = [m.start() for m in re.finditer("\n", raw)]
+    cuts = sorted({m.end() for m in UNIT_CUT.finditer(raw)} | {len(raw)})
+    units, start, prev = [], 0, ""
+    for end in cuts:
+        piece = raw[start:end]
+        text = piece.strip()
+        if text:
+            off = start + (len(piece) - len(piece.lstrip()))
+            units.append({"line": bisect.bisect_left(nl, off) + 1, "text": text, "prev": prev})
+            prev = text
+        start = end
+    return units
+
+
+def unit_where(t):
+    m = re.match(r'^"([^"]+)"\s*:', t)
+    if m:
+        return f'JSON key "{m.group(1)}"'
+    m = re.match(r"<([A-Za-z][\w:-]*)", t)
+    return f"<{m.group(1)}>" if m else ""
+
+
+def _clip(t, n):
+    return t if len(t) <= n else t[:n] + f"... ({len(t) - n} more characters, full text in the attached source file)"
+
+
+def unit_show(u, limit=None):
+    """Exact source text of a unit (with its parent tag on the line above when it is a bare text line)."""
+    t = u["text"]
+    if not t.startswith(("<", '"')) and u.get("prev"):
+        t = u["prev"][:300] + "\n" + t
+    return _clip(t, limit) if limit else t
+
+
+def _line_text(l):
+    m = LINK_LINE.match(l)
+    return m.group(1) if m else (l[7:] if l.startswith("[text] ") else l)
+
+
+def _hint(t):
+    t = " ".join(t.split())
+    return t if len(t) <= 50 else (t[:50].rsplit(" ", 1)[0] or t[:50])
+
+
+def _match_units(cands, target):
+    ts = set(toks(strip_prices(_line_text(target))))
+    if not ts:
+        return []
+    res = []
+    if len(ts) < 3:
+        pl = unit_plain(strip_prices(_line_text(target)))
+        res = [(1.0, len(c["text"]), c) for c in cands if c["plain"] == pl]
+    else:
+        for c in cands:
+            cov = len(ts & c["toks"]) / len(ts)
+            if cov >= 0.8 and len(c["text"]) <= 4000:
+                res.append((cov, len(c["text"]), c))
+    res.sort(key=lambda r: (-r[0], r[1]))
+    return [c for _, _, c in res[:3]]
+
+
+def _delta(old, new):
+    """(removed segments, added segments, search hint for the old text, search hint for the new text)."""
+    ta, tb = mask_prices(old).split(), mask_prices(new).split()
+    dels, inss, hb, ha = [], [], "", ""
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, ta, tb, autojunk=False).get_opcodes():
+        if tag == "equal":
+            continue
+        if i2 > i1:
+            dels.append(" ".join(ta[i1:i2]))
+            hb = hb or " ".join(ta[max(0, i1 - 2):i2 + 2])
+        if j2 > j1:
+            inss.append(" ".join(tb[j1:j2]))
+            ha = ha or " ".join(tb[max(0, j1 - 2):j2 + 2])
+    ok = lambda t: _hint(t) if t and "{price}" not in t else ""
+    return dels, inss, ok(hb), ok(ha)
+
+
+def source_changes(d, raw_before, raw_after):
+    """For every change: the exact source lines (before / after) it lives in, plus a search string and a
+    short word-level delta. Only pieces of source that really differ between the two versions are used,
+    so build ids, nonces and unchanged repeats don't get in the way."""
+    ub, ua = src_units(raw_before), src_units(raw_after)
+    cb, ca = Counter(u["text"] for u in ub), Counter(u["text"] for u in ua)
+
+    def only(units, extra):
+        extra, out = dict(extra), []
+        for u in units:
+            if extra.get(u["text"], 0) > 0:
+                extra[u["text"]] -= 1
+                u["toks"], u["plain"] = set(toks(u["text"])), unit_plain(u["text"])
+                out.append(u)
+        return out
+    chb, cha = only(ub, cb - ca), only(ua, ca - cb)
+    out = []
+    for ch in d["changes"]:
+        kind = ch[0]
+        old = ch[1] if kind in ("pair", "del") else None
+        new = ch[2] if kind == "pair" else (ch[1] if kind == "ins" else None)
+        c = {"label": {"pair": "Text edited", "del": "Text removed", "ins": "Text added"}[kind],
+             "before": _match_units(chb, old) if old else [], "after": _match_units(cha, new) if new else [],
+             "delta": [], "find_before": "", "find_after": "", "image": ""}
+        if kind == "pair":
+            dels, inss, hb, ha = _delta(_line_text(old), _line_text(new))
+            if dels:
+                c["delta"].append("- " + cut(" ... ".join(dels), 300))
+            if inss:
+                c["delta"].append("+ " + cut(" ... ".join(inss), 300))
+            c["find_before"], c["find_after"] = hb, ha
+        elif kind == "del":
+            c["delta"], c["find_before"] = ["- " + cut(mask_prices(_line_text(old)), 300)], _hint(_line_text(old))
+        else:
+            c["delta"], c["find_after"] = ["+ " + cut(mask_prices(_line_text(new)), 300)], _hint(_line_text(new))
+        out.append(c)
+
+    for k, ov, nv in d["meta"]:
+        pat = re.compile(rf'(?:name|property)\s*=\s*["\']{re.escape(k)}["\']|^"{re.escape(k)}"\s*:', re.I)
+
+        def pick(cands):
+            hits = [x for x in cands if pat.search(x["text"])]
+            hits.sort(key=lambda x: (not x["text"].startswith("<meta"), len(x["text"])))
+            return hits[:2]
+        c = {"label": f"Page info '{k}' changed", "before": pick(chb) if ov is not None else [],
+             "after": pick(cha) if nv is not None else [], "delta": [], "find_before": "", "find_after": "", "image": ""}
+        if ov is not None and nv is not None:
+            dels, inss, hb, ha = _delta(ov, nv)
+            if dels:
+                c["delta"].append("- " + cut(" ... ".join(dels), 300))
+            if inss:
+                c["delta"].append("+ " + cut(" ... ".join(inss), 300))
+            c["find_before"], c["find_after"] = hb, ha
+        elif ov is not None:
+            c["delta"] = ["- " + cut(ov, 300)]
+        else:
+            c["delta"] = ["+ " + cut(nv, 300)]
+        out.append(c)
+
+    for label, urls, pool, side in (("Image added", d["img_added"], cha, "after"), ("Image removed", d["img_removed"], chb, "before")):
+        for u in urls:
+            hits = [x for x in pool if u in unesc(x["text"])][:2] or [x for x in pool if u.rsplit("/", 1)[-1] in x["text"]][:2]
+            out.append({"label": label, "image": u, "before": hits if side == "before" else [],
+                        "after": hits if side == "after" else [], "delta": [], "find_before": "",
+                        "find_after": u.rsplit("/", 1)[-1] if side == "after" else ""})
+    return out
+
+
+def _safe(t):
+    return t.replace("```", "'''")
+
+
+def _compose_exact(name, url, stamp, d, kind, src, attached, max_changes=6):
+    out = [f"**{name}** {kind} ({stamp})", url, "", f"What changed: {_summary(d)}",
+           f"Source: view-source:{url} (the line numbers below are lines of that page source)"]
+    for n, ch in enumerate(src[:max_changes], 1):
+        out += ["", f"**{n}. {ch['label']}**" + (" (attached)" if ch["image"] in attached else "")]
+        if ch["image"]:
+            out.append(f"<{ch['image']}>" if ch["image"] in attached else ch["image"])
+        if ch["find_after"]:
+            out.append(f"Search the live source / AFTER file for: `{ch['find_after'].replace('`', ' ')}`")
+        if ch["find_before"]:
+            out.append(f"Search the BEFORE file for: `{ch['find_before'].replace('`', ' ')}`")
+        for side in ("before", "after"):
+            for u in ch[side]:
+                w = unit_where(u["text"])
+                out += [f"{side.capitalize()} (line {u['line']}{', ' + w if w else ''}):", "```html", _safe(unit_show(u, 3000)), "```"]
+        if not ch["before"] and not ch["after"]:
+            out.append("(couldn't pin this one to a single source line, see the attached copies)")
+        if ch["delta"]:
+            out += ["Changed:", "```diff"] + [_safe(x) for x in ch["delta"]] + ["```"]
+    if len(src) > max_changes:
+        out += ["", f"... and {len(src) - max_changes} more changes, all of them are in the attached source file."]
+    out += ["", "Attached: exact copies of the page (before and after), and the full text of every changed source line. "
+                "Images and the list of changes are at the very bottom of each copy."]
+    return "\n".join(out)
+
+
+def _source_file(name, url, stamp, src):
+    out = [f"Changed source for {name}", f"Page: {url}", f"Time: {stamp}", f"View it with: view-source:{url}",
+           "Line numbers are lines of the page source we fetched; your browser can be served slightly different source.", ""]
+    for n, ch in enumerate(src, 1):
+        out += ["=" * 70, f"{n}. {ch['label']}" + (f"  {ch['image']}" if ch["image"] else "")]
+        if ch["find_after"]:
+            out.append(f"Search the live source / AFTER file for: {ch['find_after']}")
+        if ch["find_before"]:
+            out.append(f"Search the BEFORE file for: {ch['find_before']}")
+        for side in ("before", "after"):
+            for u in ch[side]:
+                w = unit_where(u["text"])
+                out += ["", f"{side.upper()} (line {u['line']}{', ' + w if w else ''}):", unit_show(u)]
+        if ch["delta"]:
+            out += ["", "CHANGED:"] + ch["delta"]
+        out.append("")
+    return "\n".join(out)
 
 
 # ---------------------------------------------------------------- alert builders
@@ -642,11 +975,15 @@ def file_stub(name):
     return re.sub(r"[^A-Za-z0-9._-]+", "-", name).strip("-")[:60] or "page"
 
 
+THUMB_TOTAL = 1_600_000   # total size of image thumbnails embedded in the gallery of each copy
+
+
 def change_alert(name, url, stamp, old_text, new_text, kind="changed", note="", stub=None, images=None,
-                 raw_before=None, raw_after=None, prepared=False):
+                 raw_before=None, raw_after=None, prepared=False, thumbs=None):
     """images: optional {url: bytes} for changed images (attached to the Discord message and embedded in
-    the files). raw_before / raw_after: the page HTML before and after, which gives exact copies; without
-    both, a rebuilt preview is attached instead."""
+    the files). thumbs: optional {url: small image bytes} for the gallery. raw_before / raw_after: the page
+    HTML before and after, which gives exact copies plus the exact changed source lines; without both, a
+    rebuilt preview is attached instead."""
     d = compare(old_text, new_text)
     stub = file_stub(stub or name)
     images = images or {}
@@ -674,16 +1011,29 @@ def change_alert(name, url, stamp, old_text, new_text, kind="changed", note="", 
         if mime != "application/octet-stream":
             embed[u] = f"data:{mime};base64," + base64.b64encode(data).decode()
             tot += len(data)
+    th_uri, ttot = {}, 0
+    for u, data in (thumbs or {}).items():
+        mime, _ = sniff(data)
+        if mime == "application/octet-stream" or ttot + len(data) > THUMB_TOTAL:
+            continue
+        th_uri[u] = f"data:{mime};base64," + base64.b64encode(data).decode()
+        ttot += len(data)
     exact = bool(raw_before and raw_after)
+    src = source_changes(d, raw_before, raw_after) if (exact and not prepared) else None
     if exact:
-        files = [(f"{stub}_before.html", copy_file("before", raw_before, url, name, stamp, d, embed, note, prepared)),
-                 (f"{stub}_after.html", copy_file("after", raw_after, url, name, stamp, d, embed, note, prepared))]
+        files = [(f"{stub}_before.html", copy_file("before", raw_before, url, name, stamp, d, embed, note, prepared,
+                                                   src=src, thumbs=th_uri)),
+                 (f"{stub}_after.html", copy_file("after", raw_after, url, name, stamp, d, embed, note, prepared,
+                                                  src=src, thumbs=th_uri))]
+        if src:
+            files.append((f"{stub}_changed_source.txt", _source_file(name, url, stamp, src).encode("utf-8")))
     else:
         n2 = (note + " " if note else "") + "(No saved copy of the earlier version yet, so this is a rebuilt preview, not an exact copy.)"
         files = [(f"{stub}_before.html", render_preview(name, url, "before", stamp, d, note=n2, embed=embed).encode()),
                  (f"{stub}_after.html", render_preview(name, url, "after", stamp, d, note=n2, embed=embed).encode())]
-    return {"text": build_message(name, url, stamp, d, kind, attached=attached, exact=exact),
-            "files": files, "extra": extras}
+    text = (_compose_exact(name, url, stamp, d, kind, src, attached) if src
+            else build_message(name, url, stamp, d, kind, attached=attached, exact=exact))
+    return {"text": text, "files": files, "extra": extras}
 
 
 def live_alert(name, url, stamp, new_text, note="", raw=None):

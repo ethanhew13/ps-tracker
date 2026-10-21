@@ -15,7 +15,7 @@ Two kinds of watching:
 Every alert is a readable summary plus two attached HTML files: an exact copy of the page before and
 after (the last saved copy lives in snapshots/), with every image and the list of changes added at the
 very end of each file. Rebuilt-preview fallback if no earlier copy exists. The
-differences listed at the bottom. Changed images are attached to the alert too, and every image the pages
+differences listed at the bottom, with the exact source lines. Prices are ignored. Changed images are attached to the alert too, and every image the pages
 use is saved into an images/ folder next to this script (so the workflow commits it to the repo),
 which keeps images viewable after PlayStation removes them. Every page is also saved to the Wayback
 Machine (once when first seen, then again on every change) and the alert links the before/after captures,
@@ -24,6 +24,7 @@ but only for the storefront pages listed in WAYBACK_PAGES. Pages that return 404
 """
 import hashlib
 import html
+import io
 import json
 import re
 import sys
@@ -33,7 +34,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
-from ps_common import (UA, change_alert, gone_alert, image_urls, live_alert, parse_meta,
+from ps_common import (UA, change_alert, gone_alert, image_urls, live_alert, mask_prices, parse_meta,
                        parse_snapshot, send_alerts, sniff, to_lines, wayback_line, wayback_many)
 
 WATCH = {
@@ -71,7 +72,7 @@ LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
 PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 
 CONFIRM = False       # True = require the change on 2 consecutive runs before alerting
-SNAP_V = 2            # bump when the snapshot format changes (triggers a silent re-baseline)
+SNAP_V = 3            # bump when the snapshot format changes (triggers a silent re-baseline); 3 = prices ignored
 MAX_STATE = 150_000   # max chars of page text kept in the state file
 
 SNAP_DIR = Path(__file__).with_name("snapshots")   # last saved HTML of each page (the "before" copy)
@@ -94,6 +95,8 @@ MAX_ARCHIVE_MB = 300         # stop saving new images once the archive reaches t
 # meta tags that change on every deploy and aren't real content changes
 IGNORE_META = {"wca-ssr-version", "wca-theme", "viewport", "next-head-count",
                "content-page-ref", "csrf-token"}
+# any meta tag whose name looks like a rotating token is ignored too
+VOLATILE_META = re.compile(r"csrf|xsrf|nonce|token|session|request[-_]?id|trace[-_]?id|build[-_]?id", re.I)
 # visible-text lines to ignore (regex). Add noisy stuff here if you get false alerts.
 IGNORE_LINES = [re.compile(p) for p in [r"^©"]]
 
@@ -135,13 +138,13 @@ def snapshot(url):
     if status != "ok":
         return {"status": status}
     meta = parse_meta(body)
-    lines = [f"[meta] {k}: {v}" for k, v in sorted(meta.items()) if k not in IGNORE_META]
+    lines = [f"[meta] {k}: {v}" for k, v in sorted(meta.items()) if k not in IGNORE_META and not VOLATILE_META.search(k)]
     lines += [f"[img] {u}" for u in image_urls(body)]
     lines += to_lines(body, IGNORE_LINES)
     text = "\n".join(lines)
     if len(lines) < 5:  # basically empty page (blocked / JS-only), don't trust it
         return {"status": "empty"}
-    return {"status": "ok", "v": SNAP_V, "hash": hashlib.sha1(text.encode()).hexdigest(),
+    return {"status": "ok", "v": SNAP_V, "hash": hashlib.sha1(mask_prices(text).encode()).hexdigest(),
             "text": text[:MAX_STATE], "_raw": body}
 
 
@@ -153,7 +156,7 @@ def keyword_snapshot(url):
         return {"status": "empty"}
     text = "\n".join(keyword_lines(body, url))
     return {"status": "ok", "v": SNAP_V, "mode": "keywords",
-            "hash": hashlib.sha1(text.encode()).hexdigest(), "text": text[:MAX_STATE], "_raw": body}
+            "hash": hashlib.sha1(mask_prices(text).encode()).hexdigest(), "text": text[:MAX_STATE], "_raw": body}
 
 
 def download(url):
@@ -167,6 +170,32 @@ def download(url):
     if not data or len(data) > MAX_IMG_BYTES or sniff(data)[0] == "application/octet-stream":
         return None
     return data
+
+
+def make_thumb(data, max_w=360):
+    """Small version of an image for the gallery (needs Pillow; without it only tiny images are used as they are)."""
+    if b"<svg" in data[:500].lower():
+        return data if len(data) <= 40_000 else None
+    try:
+        from PIL import Image
+    except ImportError:
+        return data if len(data) <= 40_000 else None
+    try:
+        im = Image.open(io.BytesIO(data))
+        im.load()
+        im.thumbnail((max_w, max_w * 2))
+        if im.mode in ("RGBA", "LA", "P"):
+            rgba = im.convert("RGBA")
+            bg = Image.new("RGB", rgba.size, (255, 255, 255))
+            bg.paste(rgba, mask=rgba.split()[3])
+            im = bg
+        else:
+            im = im.convert("RGB")
+        buf = io.BytesIO()
+        im.save(buf, "JPEG", quality=62, optimize=True)
+        return buf.getvalue()
+    except Exception:
+        return None
 
 
 class Archive:
@@ -233,6 +262,22 @@ class Archive:
         dead = sum(1 for e in self.index.values() if not e.get("file") and e.get("failed", 0) >= 3)
         return (f"images: {self.new_saved} saved this run, {saved} in archive ({self.total / 1e6:.1f} MB)"
                 + (f", {dead} unreachable" if dead else ""))
+
+    def thumbs_for(self, urls, budget=1_600_000):
+        """{url: small image bytes} for the archived images among `urls` (disk only, never downloads)."""
+        out, used = {}, 0
+        for u in urls:
+            e = self.index.get(u) or {}
+            if not e.get("file"):
+                continue
+            try:
+                t = make_thumb((IMAGE_DIR / e["file"]).read_bytes())
+            except OSError:
+                continue
+            if t and used + len(t) <= budget:
+                out[u] = t
+                used += len(t)
+        return out
 
     def images_for(self, old_text, new_text):
         """Bytes for the images that were added or removed between two snapshots."""
@@ -311,9 +356,11 @@ def main():
 
         if old and old.get("status") == "missing":  # it just appeared
             if old.get("text"):
+                before_raw = load_raw(name)
                 alert = change_alert(name, url, stamp, old["text"], new["text"], "is back", note,
                                      images=arch.images_for(old["text"], new["text"]),
-                                     raw_before=load_raw(name), raw_after=raw)
+                                     raw_before=before_raw, raw_after=raw,
+                                     thumbs=arch.thumbs_for(list(dict.fromkeys(image_urls(before_raw or "") + image_urls(raw or "")))))
             else:
                 alert = live_alert(name, url, stamp, new["text"], note, raw=raw)
             alerts.append(alert)
@@ -341,9 +388,11 @@ def main():
             old["pending"] = new["hash"]  # first sighting, wait for the next run
             pending.append(name)
             continue
+        before_raw = load_raw(name)
         alert = change_alert(name, url, stamp, old["text"], new["text"], "changed", note,
                              images=arch.images_for(old["text"], new["text"]),
-                             raw_before=load_raw(name), raw_after=raw)
+                             raw_before=before_raw, raw_after=raw,
+                             thumbs=arch.thumbs_for(list(dict.fromkeys(image_urls(before_raw or "") + image_urls(raw or "")))))
         alerts.append(alert)
         wb_jobs.append((name, url, alert, old.get("wayback")))
         state[name] = new
