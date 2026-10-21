@@ -22,8 +22,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pypdf (reads the lobbyist PDFs)
-        run: pip install pypdf
+      - name: Install pypdf (lobbyist PDFs) and Pillow (image thumbnails)
+        run: pip install pypdf pillow
 
       - name: Run regional tracker
         env:
