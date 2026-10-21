@@ -18,7 +18,8 @@ very end of each file. Rebuilt-preview fallback if no earlier copy exists. The
 differences listed at the bottom. Changed images are attached to the alert too, and every image the pages
 use is saved into an images/ folder next to this script (so the workflow commits it to the repo),
 which keeps images viewable after PlayStation removes them. Every page is also saved to the Wayback
-Machine (once when first seen, then again on every change) and the alert links the before/after captures. Pages that return 404 (not live yet) are remembered and you get a
+Machine (once when first seen, then again on every change) and the alert links the before/after captures,
+but only for the storefront pages listed in WAYBACK_PAGES. Pages that return 404 (not live yet) are remembered and you get a
 "now LIVE" alert the moment they appear. First run just saves a baseline.
 """
 import hashlib
@@ -41,12 +42,21 @@ WATCH = {
     "store-gta6-ultimate": "https://store.playstation.com/en-us/product/EP1004-PPSA01547_00-GTAVIULTIMATE001",
     "support-gta6-offer-terms": "https://www.playstation.com/en-us/support/games/gta-vi-offer-terms",
     "support-gta6-game": "https://www.playstation.com/en-us/support/games/gta-vi-game/",
+    # storefronts (price / edition / stock / launch-time changes); these are the pages saved to the Wayback Machine
+    "store-au-standard": "https://store.playstation.com/en-au/product/EP1004-PPSA01547_00-GTAVISTANDARD001",
+    "store-au-ultimate": "https://store.playstation.com/en-au/product/EP1004-PPSA01547_00-GTAVIULTIMATE001",
+    "xbox-gta6-au": "https://www.xbox.com/en-AU/games/store/grand-theft-auto-vi/9p3h4968grsm",
+    "xbox-gta6-au-2": "https://www.xbox.com/en-AU/games/store/grand-theft-auto-vi/9nl3wwnzlzzn",
+    "jbhifi-au-gta6": "https://www.jbhifi.com.au/collections/games-consoles/gta-vi",
+    "pbtech-au-gta6": "https://www.pbtech.com/au/product/GAMSNY3001/Grand-Theft-Auto-VI---PS5",
+    "gamestop-us-gta6": "https://www.gamestop.com/products/grand-theft-auto-vi/448295.html",
     "nz-oflc-gta6": "https://www.classificationoffice.govt.nz/find-a-rating/quick-takes/grand-theft-auto-vi/",
     "vector-work": "https://vectormedia.com/work/",
     "vector-blog": "https://vectormedia.com/blog",
 }
 
 KEYWORD_WATCH = {
+    "harveynorman-au-preorders": "https://www.harveynorman.com.au/games-hub/games/pre-order-games",  # storefront list
     "sitemap": "https://www.playstation.com/en-us/site-map/",
     "support-games-list": "https://www.playstation.com/en-us/support/games/?category=game-support&subCategory=support-for-specific-games",
 }
@@ -67,7 +77,12 @@ MAX_STATE = 150_000   # max chars of page text kept in the state file
 SNAP_DIR = Path(__file__).with_name("snapshots")   # last saved HTML of each page (the "before" copy)
 MAX_RAW = 2_000_000          # pages bigger than this are not saved as exact copies
 
-ARCHIVE_WAYBACK = True       # save pages to the Wayback Machine (first sighting + every change)
+ARCHIVE_WAYBACK = True       # save storefront pages to the Wayback Machine (first sighting + every change)
+WAYBACK_PAGES = {            # only these get saved; everything else is left alone
+    "store-gta6-standard", "store-gta6-ultimate", "store-au-standard", "store-au-ultimate",
+    "xbox-gta6-au", "xbox-gta6-au-2", "jbhifi-au-gta6", "pbtech-au-gta6", "gamestop-us-gta6",
+    "harveynorman-au-preorders",
+}
 WAYBACK_MAX_PER_RUN = 6      # be polite: at most this many captures per run, the rest wait for the next run
 
 ARCHIVE_IMAGES = True        # True = save every image into images/ (committed to the repo by the workflow)
@@ -335,6 +350,7 @@ def main():
         save_raw(name, raw)
 
     wb_note = ""
+    wb_jobs = [j for j in wb_jobs if j[0] in WAYBACK_PAGES]
     if ARCHIVE_WAYBACK and wb_jobs:
         jobs = sorted(wb_jobs, key=lambda j: j[2] is None)[:WAYBACK_MAX_PER_RUN]  # pages with alerts first
         results = wayback_many([j[1] for j in jobs], limit=WAYBACK_MAX_PER_RUN)

@@ -59,7 +59,7 @@ STATE_FILE = Path(__file__).with_name("ps_feed_state.json")
 LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
 PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 ALERT_ON_EDITS = True     # also alert when an already-seen post is edited
-ARCHIVE_WAYBACK = True    # save new / edited posts to the Wayback Machine
+ARCHIVE_WAYBACK = False   # save new / edited posts to the Wayback Machine (off: only storefronts are archived)
 WAYBACK_MAX_PER_RUN = 6
 MAX_SEEN = 500            # how many post ids to remember per feed
 
