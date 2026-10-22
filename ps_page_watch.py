@@ -43,21 +43,17 @@ WATCH = {
     "store-gta6-ultimate": "https://store.playstation.com/en-us/product/EP1004-PPSA01547_00-GTAVIULTIMATE001",
     "support-gta6-offer-terms": "https://www.playstation.com/en-us/support/games/gta-vi-offer-terms",
     "support-gta6-game": "https://www.playstation.com/en-us/support/games/gta-vi-game/",
-    # storefronts (price / edition / stock / launch-time changes); these are the pages saved to the Wayback Machine
+    # first-party storefronts only (no third-party retailers); these are the pages saved to the Wayback Machine
     "store-au-standard": "https://store.playstation.com/en-au/product/EP1004-PPSA01547_00-GTAVISTANDARD001",
     "store-au-ultimate": "https://store.playstation.com/en-au/product/EP1004-PPSA01547_00-GTAVIULTIMATE001",
     "xbox-gta6-au": "https://www.xbox.com/en-AU/games/store/grand-theft-auto-vi/9p3h4968grsm",
     "xbox-gta6-au-2": "https://www.xbox.com/en-AU/games/store/grand-theft-auto-vi/9nl3wwnzlzzn",
-    "jbhifi-au-gta6": "https://www.jbhifi.com.au/collections/games-consoles/gta-vi",
-    "pbtech-au-gta6": "https://www.pbtech.com/au/product/GAMSNY3001/Grand-Theft-Auto-VI---PS5",
-    "gamestop-us-gta6": "https://www.gamestop.com/products/grand-theft-auto-vi/448295.html",
     "nz-oflc-gta6": "https://www.classificationoffice.govt.nz/find-a-rating/quick-takes/grand-theft-auto-vi/",
     "vector-work": "https://vectormedia.com/work/",
     "vector-blog": "https://vectormedia.com/blog",
 }
 
 KEYWORD_WATCH = {
-    "harveynorman-au-preorders": "https://www.harveynorman.com.au/games-hub/games/pre-order-games",  # storefront list
     "sitemap": "https://www.playstation.com/en-us/site-map/",
     "support-games-list": "https://www.playstation.com/en-us/support/games/?category=game-support&subCategory=support-for-specific-games",
 }
@@ -81,8 +77,7 @@ MAX_RAW = 2_000_000          # pages bigger than this are not saved as exact cop
 ARCHIVE_WAYBACK = True       # save storefront pages to the Wayback Machine (first sighting + every change)
 WAYBACK_PAGES = {            # only these get saved; everything else is left alone
     "store-gta6-standard", "store-gta6-ultimate", "store-au-standard", "store-au-ultimate",
-    "xbox-gta6-au", "xbox-gta6-au-2", "jbhifi-au-gta6", "pbtech-au-gta6", "gamestop-us-gta6",
-    "harveynorman-au-preorders",
+    "xbox-gta6-au", "xbox-gta6-au-2",
 }
 WAYBACK_MAX_PER_RUN = 6      # be polite: at most this many captures per run, the rest wait for the next run
 
@@ -329,6 +324,13 @@ def targets():
 
 def main():
     state = load_state()
+    known = set(WATCH) | set(KEYWORD_WATCH)
+    for gone in [k for k in state if k not in known]:  # removed from the lists: forget it completely
+        del state[gone]
+        try:
+            (SNAP_DIR / f"{gone}.html").unlink()
+        except OSError:
+            pass
     stamp = datetime.now(LOCAL_TZ).strftime("%d %b %H:%M") + " AWST"
     alerts, baselined, notes, pending = [], [], [], []
     arch, current_urls, wb_jobs = Archive(), [], []  # wb_jobs: (name, url, alert or None, previous capture)

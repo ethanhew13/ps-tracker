@@ -23,6 +23,7 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
@@ -57,6 +58,8 @@ HIGHLIGHT = re.compile(
 
 STATE_FILE = Path(__file__).with_name("ps_feed_state.json")
 LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
+NEW_SINCE = None   # only posts published on/after this day count as new, e.g. "2026-10-22". None = the day this
+                   # version first runs (Perth time). Posts without a date are treated as new.
 PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 ALERT_ON_EDITS = True     # also alert when an already-seen post is edited
 ARCHIVE_WAYBACK = False   # save new / edited posts to the Wayback Machine (off: only storefronts are archived)
@@ -93,6 +96,39 @@ def fetch(url):
         return f"http {e.code}", b""
     except Exception as e:  # network hiccup: skip, don't treat as a change
         return f"error: {e}", b""
+
+
+def parse_date(s):
+    """UTC datetime from an RSS (RFC 822) or Atom (ISO 8601) date string, or None."""
+    s = (s or "").strip()
+    if not s:
+        return None
+    try:
+        dt = parsedate_to_datetime(s)
+    except (TypeError, ValueError, IndexError):
+        try:
+            dt = datetime.fromisoformat(s.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    if dt is None:
+        return None
+    return (dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)).astimezone(timezone.utc)
+
+
+def since_cutoff(state, now=None):
+    """Start of the 'new' window: posts older than this are never reported."""
+    if NEW_SINCE:
+        return datetime.fromisoformat(NEW_SINCE).replace(tzinfo=LOCAL_TZ).astimezone(timezone.utc)
+    if "_since" not in state:
+        now = now or datetime.now(LOCAL_TZ)
+        state["_since"] = now.astimezone(LOCAL_TZ).replace(hour=0, minute=0, second=0, microsecond=0) \
+            .astimezone(timezone.utc).isoformat()
+    return datetime.fromisoformat(state["_since"])
+
+
+def is_old(post, cutoff):
+    dt = parse_date(post.get("pub") or post.get("date"))
+    return dt is not None and dt < cutoff
 
 
 def _text(el):
@@ -266,6 +302,7 @@ def load_state():
 def main():
     state = load_state()
     stamp = datetime.now(LOCAL_TZ).strftime("%d %b %H:%M") + " AWST"
+    cutoff = since_cutoff(state)
     alerts, baselined = [], []  # alerts: (alert dict, post link)
     alerted_ids = set()  # same post can show up in several feeds, only alert once per run
     for name, entry in FEEDS.items():
@@ -284,7 +321,9 @@ def main():
         state[name]["feed_url"] = used
         for p in posts:
             prev = seen.get(p["id"])
-            if prev is None:
+            if prev is None and is_old(p, cutoff):
+                pass  # published before the cutoff: remember it, never report it
+            elif prev is None:
                 if p["id"] not in alerted_ids:
                     alerts.append((new_post_alert(name, label, p, stamp), p["link"]))
                     alerted_ids.add(p["id"])

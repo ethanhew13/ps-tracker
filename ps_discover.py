@@ -30,7 +30,7 @@ from pathlib import Path
 from urllib.parse import quote, urldefrag, urljoin
 
 from ps_common import cut, send_alerts, to_lines
-from ps_feed_watch import _text, fetch, load_posts
+from ps_feed_watch import _text, fetch, is_old, load_posts, parse_date, since_cutoff
 
 STATE_FILE = Path(__file__).with_name("ps_discover_state.json")
 MERCH_DIR = Path(__file__).with_name("merch")
@@ -139,8 +139,8 @@ def anchors(page, base):
             yield _text(m.group(3)), full
 
 
-def item(i_id, title, url="", snippet="", text=""):
-    return {"id": i_id, "title": title, "url": url, "snippet": snippet, "text": text or f"{title} {snippet}"}
+def item(i_id, title, url="", snippet="", text="", date=""):
+    return {"id": i_id, "title": title, "url": url, "snippet": snippet, "text": text or f"{title} {snippet}", "date": date}
 
 
 # ---------------------------------------------------------------- source runners: (items, error, silent_ids)
@@ -148,8 +148,8 @@ def run_feed(src, st):
     posts, used = load_posts({"urls": src.get("urls", []), "page": src.get("page")}, st.get("feed_url"))
     if posts is not None:
         st["feed_url"] = used
-        return [item(p["id"], p["title"], p["link"], p["desc"], f"{p['title']} {p['desc']} {_text(p['body'])[:3000]}")
-                for p in posts], None, []
+        return [item(p["id"], p["title"], p["link"], p["desc"], f"{p['title']} {p['desc']} {_text(p['body'])[:3000]}",
+                     p["pub"]) for p in posts], None, []
     if src.get("fallback_links"):  # no feed anywhere: treat the page as a list of links
         return run_links({"url": src["page"], **src["fallback_links"], "min_items": 3}, st)
     return [], "no working feed found", []
@@ -378,12 +378,15 @@ def classify(it, src):
 def flag_message(src, batch, extra):
     tag = f"[GTA match: {batch[0][1]}] " if batch[0][1] else ""
     out = [f"{tag}**{src['label']}** ({len(batch) + extra} new)"]
+    norm = lambda t: re.sub(r"\W+", " ", t.lower()).strip()
     for it, _ in batch:
-        out.append(f"- {cut(it['title'], 140)}")
+        when = parse_date(it.get("date"))
+        out.append(f"- {cut(it['title'], 140)}" + (f" ({when:%d %b %H:%M} UTC)" if when else ""))
         if it["url"]:
             out.append(f"  {it['url']}")
-        if it["snippet"]:
-            out.append(f"  {cut(it['snippet'], 160)}")
+        sn = it["snippet"]
+        if sn and not norm(sn).startswith(norm(it["title"])[:40]) and not norm(it["title"]).startswith(norm(sn)[:40]):
+            out.append(f"  {cut(sn, 160)}")  # skip snippets that just repeat the headline
     if extra:
         out.append(f"... and {extra} more (they're in the next daily digest)")
     return "\n".join(out)
@@ -429,6 +432,7 @@ def load_state():
 def main(now=None):
     now = now or datetime.now(timezone.utc)
     state = load_state()
+    cutoff = since_cutoff(state, now)
     sstate = state.setdefault("sources", {})
     queue = state.setdefault("queue", [])
     due = [s for s in SOURCES
@@ -457,6 +461,10 @@ def main(now=None):
         seen = st.get("seen", [])
         seen_set = set(seen)
         fresh = [i for i in items if h(i["id"]) not in seen_set]
+        stale = [i for i in fresh if is_old(i, cutoff)]  # published before the cutoff: remember, never report
+        fresh = [i for i in fresh if not is_old(i, cutoff)]
+        seen += [h(i["id"]) for i in stale]
+        seen_set.update(h(i["id"]) for i in stale)
         for i in silent:  # progress we learn silently (certificate history, etc.)
             if h(i) not in seen_set:
                 seen.append(h(i))
