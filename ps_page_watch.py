@@ -24,6 +24,7 @@ but only for the storefront pages listed in WAYBACK_PAGES. Pages that return 404
 """
 import hashlib
 import html
+import http.cookiejar
 import io
 import json
 import re
@@ -56,6 +57,16 @@ WATCH = {
 KEYWORD_WATCH = {
     "sitemap": "https://www.playstation.com/en-us/site-map/",
     "support-games-list": "https://www.playstation.com/en-us/support/games/?category=game-support&subCategory=support-for-specific-games",
+}
+
+# Links that redirect somewhere: tracks the redirect hop by hop plus one section of the page it lands on
+# (the element the #fragment points at; "section" is the fallback id). Alerts if the redirect goes somewhere
+# new, if a dedicated page appears, or if that section changes.
+SECTION_WATCH = {
+    "ps-gta6-features-link": {"url": "https://playstation.com/GTAVIfeatures", "lang": "en-AU", "section": "ps5-features"},
+    # the same section on the AU page directly (the link sends Australians here, but our servers are in the US)
+    "ps-gta6-features-au": {"url": "https://www.playstation.com/en-au/games/grand-theft-auto-vi/", "lang": "en-AU",
+                            "section": "ps5-features"},
 }
 
 # What counts as "GTA stuff" on keyword pages. Edit freely.
@@ -128,14 +139,105 @@ def fetch(url):
         return f"error: {e}", ""
 
 
-def snapshot(url):
-    status, body = fetch(url)
-    if status != "ok":
-        return {"status": status}
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def fetch_chain(url, lang="en-AU", max_hops=8):
+    """Follow redirects by hand so every hop is recorded.
+    Returns (status, hops, final_url, html); hops = [(status, url, where it points or None, "http"/"meta"/"final")]."""
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar), _NoRedirect)
+    hops, cur, seen = [], url, set()
+    for _ in range(max_hops):
+        if cur in seen:
+            return "redirect loop", hops, cur, ""
+        seen.add(cur)
+        req = urllib.request.Request(cur, headers={"User-Agent": UA, "Accept-Language": f"{lang},en;q=0.8"})
+        try:
+            with opener.open(req, timeout=25) as r:
+                status, loc, body = r.status, None, r.read()
+        except urllib.error.HTTPError as e:
+            status, loc = e.code, e.headers.get("Location")
+            body = b"" if status in (301, 302, 303, 307, 308) else e.read()
+        except Exception as e:
+            return f"error: {e}", hops, cur, ""
+        page = body.decode("utf-8", "replace")
+        if status in (301, 302, 303, 307, 308) and loc:
+            hops.append((status, cur, urljoin(cur, loc), "http"))
+            cur = urljoin(cur, loc)
+            continue
+        if status == 200 and len(page) < 6000:  # a tiny page that just forwards you somewhere
+            mr = re.search(r"""<meta[^>]+http-equiv=["']?refresh["']?[^>]*content=["'][^"']*url=\s*([^"'>\s]+)""", page, re.I)
+            if mr:
+                nxt = urljoin(cur, html.unescape(mr.group(1)))
+                hops.append((200, cur, nxt, "meta"))
+                cur = nxt
+                continue
+        hops.append((status, cur, None, "final"))
+        return ("ok" if status == 200 else f"http {status}"), hops, cur, page
+    return "too many redirects", hops, cur, ""
+
+
+def element_by_id(page, eid):
+    """The HTML of the element with this id (including everything nested inside it), or None."""
+    m = re.search(r"""<([A-Za-z][\w:-]*)\b[^>]*\sid\s*=\s*["']""" + re.escape(eid) + r"""["'][^>]*>""", page, re.I)
+    if not m:
+        return None
+    tag, depth, pos = m.group(1).lower(), 1, m.end()
+    for t in re.finditer(rf"<(/?){re.escape(tag)}\b[^>]*>", page[pos:], re.I):
+        if t.group(1):
+            depth -= 1
+        elif not t.group(0).rstrip().endswith("/>"):
+            depth += 1
+        if depth == 0:
+            return page[m.start():pos + t.end()]
+    return page[m.start():m.start() + 30000]
+
+
+def page_lines(body):
     meta = parse_meta(body)
     lines = [f"[meta] {k}: {v}" for k, v in sorted(meta.items()) if k not in IGNORE_META and not VOLATILE_META.search(k)]
     lines += [f"[img] {u}" for u in image_urls(body)]
     lines += to_lines(body, IGNORE_LINES)
+    return lines
+
+
+def section_snapshot(url, cfg):
+    """Tracks where a link redirects (hop by hop) plus one section of the page it lands on (the element the
+    #fragment points at). If that section can't be found, the whole landing page is tracked instead."""
+    status, hops, final_url, body = fetch_chain(url, cfg.get("lang", "en-AU"))
+    if status != "ok":
+        return {"status": status}
+    red = []
+    for code, u, to, via in hops:
+        red.append(f"[redirect] {'meta refresh' if via == 'meta' else code} {u} -> {to}" if to else f"[final] {code} {u}")
+    frag = next((urlsplit(to).fragment.strip("/") for _, _, to, _ in hops if to and urlsplit(to).fragment), "")
+    ids = [i for i in (frag, cfg.get("section", "")) if i]  # the redirect's own #fragment first, then our default
+    eid, sec = "", None
+    for i in ids:
+        sec = element_by_id(body, i)
+        if sec:
+            eid = i
+            break
+    eid = eid or (ids[0] if ids else "")
+    if sec:
+        lines = red + [f"[section] #{eid}"] + [f"[img] {u}" for u in image_urls(sec)] + to_lines(sec, IGNORE_LINES)
+    else:
+        lines = red + [f"[section] #{eid or '?'} not found, tracking the whole page"] + page_lines(body)
+        if len(lines) < 8:  # blocked / JS-only page
+            return {"status": "empty"}
+    text = "\n".join(lines)
+    return {"status": "ok", "v": SNAP_V, "hash": hashlib.sha1(mask_prices(text).encode()).hexdigest(),
+            "text": text[:MAX_STATE], "_raw": body}
+
+
+def snapshot(url):
+    status, body = fetch(url)
+    if status != "ok":
+        return {"status": status}
+    lines = page_lines(body)
     text = "\n".join(lines)
     if len(lines) < 5:  # basically empty page (blocked / JS-only), don't trust it
         return {"status": "empty"}
@@ -320,11 +422,13 @@ def targets():
         yield name, url, snapshot, ""
     for name, url in KEYWORD_WATCH.items():
         yield name, url, keyword_snapshot, KEYWORD_NOTE
+    for name, cfg in SECTION_WATCH.items():
+        yield name, cfg["url"], (lambda u, c=cfg: section_snapshot(u, c)), ""
 
 
 def main():
     state = load_state()
-    known = set(WATCH) | set(KEYWORD_WATCH)
+    known = set(WATCH) | set(KEYWORD_WATCH) | set(SECTION_WATCH)
     for gone in [k for k in state if k not in known]:  # removed from the lists: forget it completely
         del state[gone]
         try:
