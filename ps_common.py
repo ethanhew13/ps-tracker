@@ -524,6 +524,10 @@ def prepare_copy(raw, url):
     scripts are switched off so the page can't re-render itself, lazy-loaded images are switched on,
     the CSP tag is dropped, and a <base> tag lets stylesheets and images load from the original site."""
     s = re.sub(r"<script\b[^>]*>", _inert_script, raw, flags=re.I)
+    # lazy-loaded pictures (lozad and similar): the only <img> sits inside <noscript> and JavaScript would create
+    # the real one, so with scripts off nothing is drawn. Unwrapping the <noscript> lets the browser pick the
+    # right <source> of the <picture> on its own.
+    s = re.sub(r"<noscript\b[^>]*>(\s*<img\b[^>]*>\s*)</noscript>", r"\1", s, flags=re.I)
     s = re.sub(r"<meta\b[^>]*http-equiv\s*=\s*[\"']?content-security-policy[^>]*>", "", s, flags=re.I)
 
     def lazy(m):
@@ -604,19 +608,26 @@ function unhide(){
   var hid=imgs.filter(function(i){return getComputedStyle(i).opacity==='0';});
   if(hid.length>=3&&hid.length/imgs.length>=0.5){hid.forEach(function(i){i.style.opacity='1';i.style.visibility='visible';});}
 }
-function run(){swapLazy();unhide();}
+function run(){swapLazy();unhide();document.querySelectorAll('.lozad').forEach(function(e){e.classList.add('loaded');e.setAttribute('data-loaded','true');});}
 run();window.addEventListener('load',function(){run();setTimeout(run,1500);setTimeout(run,4000);});
 })();</script>"""
 
 
+def _pick_variant(variants):
+    """Of the same image written several ways (e.g. ...?$4000px$ ... ?$800px$), the one closest to 800px wide."""
+    sized = [(abs(int(m.group(1)) - 800), i, u) for i, u in enumerate(variants) for m in [re.search(r"\$(\d+)px", u)] if m]
+    return min(sized)[2] if sized else variants[0]
+
+
 def image_originals(page):
-    """{url without query: first full url as written in the page}, so previews can try the real address first."""
+    """{url without query: full url as written in the page (the ~800px version when there are several)},
+    so previews and downloads can use the real address instead of the bare one."""
     s = page.replace("\\/", "/").replace("\\u002F", "/").replace("&amp;", "&")
-    out = {}
+    groups = {}
     for m in IMG_RE.finditer(s):
         full = m.group(0).rstrip(".,;")
-        out.setdefault(full.split("?")[0].split("#")[0].rstrip(".,;"), full)
-    return out
+        groups.setdefault(full.split("?")[0].split("#")[0].rstrip(".,;"), []).append(full)
+    return {k: _pick_variant(v) for k, v in groups.items()}
 
 
 def _gallery(imgs, flagged, side, embed, origs=None, thumbs=None):

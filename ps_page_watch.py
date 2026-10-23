@@ -35,7 +35,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
-from ps_common import (UA, change_alert, gone_alert, image_urls, live_alert, mask_prices, parse_meta,
+from ps_common import (UA, change_alert, gone_alert, image_originals, image_urls, live_alert, mask_prices, parse_meta,
                        parse_snapshot, send_alerts, sniff, to_lines, wayback_line, wayback_many)
 
 WATCH = {
@@ -300,6 +300,7 @@ class Archive:
 
     def __init__(self):
         self.index, self.cache, self.new_saved, self.dirty = {}, {}, 0, False
+        self.origs = {}  # image address as written in the page (with its size preset), used for downloads
         if ARCHIVE_IMAGES:
             try:
                 self.index = json.loads((IMAGE_DIR / "index.json").read_text())
@@ -319,7 +320,7 @@ class Archive:
                 pass  # saved file went missing, try downloading again
         elif e.get("failed", 0) >= 3 or urlsplit(url).path in ("", "/"):
             return None  # gave up on this one (dead link or just a bare domain)
-        data = download(url)
+        data = download(self.origs.get(url, url))
         if data is None:
             if ARCHIVE_IMAGES and urlsplit(url).path not in ("", "/"):
                 self.index.setdefault(url, {})["failed"] = e.get("failed", 0) + 1
@@ -335,6 +336,10 @@ class Archive:
             self.new_saved += 1
             self.dirty = True
         return data
+
+    def note_originals(self, raw):
+        for k, v in image_originals(raw or "").items():
+            self.origs.setdefault(k, v)
 
     def archive_many(self, urls, limit):
         done = 0
@@ -441,6 +446,7 @@ def main():
     for name, url, snap, note in targets():
         new = snap(url)
         raw = new.pop("_raw", None)
+        arch.note_originals(raw)
         status = new["status"]
         old = state.get(name)
 
