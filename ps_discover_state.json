@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793092547.330562,
+   "last_run": 1793094343.892768,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -204,7 +204,7 @@
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793092547.330562,
+   "last_run": 1793094343.892768,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -363,7 +363,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793090747.339501,
+   "last_run": 1793094343.892768,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -496,12 +496,15 @@
     "1a8c44035cd6",
     "2de6e866df96",
     "16ef0ab7c07c",
-    "578aa1d33570"
+    "578aa1d33570",
+    "af6ae99418c4",
+    "6e937255ecad",
+    "a403ff179e20"
    ]
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1793090747.339501,
+   "last_run": 1793094343.892768,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -566,18 +569,18 @@
    ]
   },
   "adage": {
-   "last_run": 1793090747.339501,
-   "fails": 150,
+   "last_run": 1793094343.892768,
+   "fails": 151,
    "status": "no working feed found"
   },
   "thedrum": {
-   "last_run": 1793090747.339501,
-   "fails": 150,
+   "last_run": 1793094343.892768,
+   "fails": 151,
    "status": "no working feed found"
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1793090747.339501,
+   "last_run": 1793094343.892768,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -810,8 +813,8 @@
    "status": "http 403"
   },
   "faa-tfr": {
-   "last_run": 1793090747.339501,
-   "fails": 150,
+   "last_run": 1793094343.892768,
+   "fails": 151,
    "status": "too little text (JavaScript page or blocked?)"
   },
   "lobby-miami-beach": {
@@ -10831,8 +10834,8 @@
    ]
   },
   "merch-store": {
-   "last_run": 1793092547.330562,
-   "fails": 300,
+   "last_run": 1793094343.892768,
+   "fails": 301,
    "status": "catalog request failed or came back empty"
   },
   "cert-transparency": {
@@ -10846,7 +10849,7 @@
     "take2games.com": "17933161661",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1793090747.339501,
+   "last_run": 1793094343.892768,
    "fails": 0,
    "status": "ok",
    "baselined": true,
