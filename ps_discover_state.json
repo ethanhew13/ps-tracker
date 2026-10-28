@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793189752.596539,
+   "last_run": 1793191549.83918,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -211,7 +211,7 @@
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793189752.596539,
+   "last_run": 1793191549.83918,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -376,7 +376,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793187957.001625,
+   "last_run": 1793191549.83918,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -521,7 +521,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1793187957.001625,
+   "last_run": 1793191549.83918,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -591,22 +591,23 @@
     "ffdb32cc1676",
     "1f73bd392fee",
     "07f9a437f7da",
-    "5a9e8274fe66"
+    "5a9e8274fe66",
+    "dd4f644b9e1a"
    ]
   },
   "adage": {
-   "last_run": 1793187957.001625,
-   "fails": 177,
+   "last_run": 1793191549.83918,
+   "fails": 178,
    "status": "no working feed found"
   },
   "thedrum": {
-   "last_run": 1793187957.001625,
-   "fails": 177,
+   "last_run": 1793191549.83918,
+   "fails": 178,
    "status": "no working feed found"
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1793187957.001625,
+   "last_run": 1793191549.83918,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -638,7 +639,8 @@
     "333ad6cdf8f7",
     "d64771ab58e1",
     "307e94bb48d2",
-    "21f5a48c6005"
+    "21f5a48c6005",
+    "c301c4033a2b"
    ]
   },
   "dimensional-innovations": {
@@ -842,8 +844,8 @@
    "status": "http 403"
   },
   "faa-tfr": {
-   "last_run": 1793187957.001625,
-   "fails": 177,
+   "last_run": 1793191549.83918,
+   "fails": 178,
    "status": "too little text (JavaScript page or blocked?)"
   },
   "lobby-miami-beach": {
@@ -10863,8 +10865,8 @@
    ]
   },
   "merch-store": {
-   "last_run": 1793189752.596539,
-   "fails": 354,
+   "last_run": 1793191549.83918,
+   "fails": 355,
    "status": "catalog request failed or came back empty"
   },
   "cert-transparency": {
@@ -10878,7 +10880,7 @@
     "take2games.com": "18016807924",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1793187957.001625,
+   "last_run": 1793191549.83918,
    "fails": 0,
    "status": "ok",
    "baselined": true,
