@@ -682,7 +682,7 @@
   },
   "dimensional-innovations": {
    "feed_url": "https://www.di.net/feed/",
-   "last_run": 1793251855.103861,
+   "last_run": 1793259057.154615,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -701,17 +701,17 @@
    ]
   },
   "outfront": {
-   "last_run": 1793251855.103861,
-   "fails": 98,
+   "last_run": 1793259057.154615,
+   "fails": 99,
    "status": "http 404"
   },
   "clearchannel": {
-   "last_run": 1793251855.103861,
-   "fails": 98,
+   "last_run": 1793259057.154615,
+   "fails": 99,
    "status": "http 404"
   },
   "venue-kaseya": {
-   "last_run": 1793251855.103861,
+   "last_run": 1793259057.154615,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -773,7 +773,7 @@
    ]
   },
   "venue-hardrock": {
-   "last_run": 1793251855.103861,
+   "last_run": 1793259057.154615,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -791,7 +791,7 @@
    ]
   },
   "venue-bayfront": {
-   "last_run": 1793251855.103861,
+   "last_run": 1793259057.154615,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -878,8 +878,8 @@
    ]
   },
   "venue-mbcc": {
-   "last_run": 1793251855.103861,
-   "fails": 98,
+   "last_run": 1793259057.154615,
+   "fails": 99,
    "status": "http 403"
   },
   "faa-tfr": {
