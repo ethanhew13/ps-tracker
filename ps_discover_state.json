@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793231154.602941,
+   "last_run": 1793232952.358201,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -208,12 +208,14 @@
     "ccb196aaacb6",
     "215df5a0eb37",
     "1e9583426b29",
-    "5f3c998eefbb"
+    "5f3c998eefbb",
+    "02f4749abee3",
+    "1276ab9442ff"
    ]
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793231154.602941,
+   "last_run": 1793232952.358201,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -377,7 +379,8 @@
     "aad61419eb01",
     "e2a844023622",
     "7ba9d9d51474",
-    "2738de66ef76"
+    "2738de66ef76",
+    "1276ab9442ff"
    ]
   },
   "gnews-gta6-ooh": {
@@ -10886,8 +10889,8 @@
    ]
   },
   "merch-store": {
-   "last_run": 1793231154.602941,
-   "fails": 377,
+   "last_run": 1793232952.358201,
+   "fails": 378,
    "status": "catalog request failed or came back empty"
   },
   "cert-transparency": {
