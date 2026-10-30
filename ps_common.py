@@ -880,16 +880,13 @@ def source_changes(d, raw_before, raw_after):
                 out.append(u)
         return out
     chb, cha = only(ub, cb - ca), only(ua, ca - cb)
-    out = []
+    out, synth = [], []
     for ch in d["changes"]:
         kind = ch[0]
         old = ch[1] if kind in ("pair", "del") else None
         new = ch[2] if kind == "pair" else (ch[1] if kind == "ins" else None)
-        if (old or new or "").startswith(("[redirect]", "[final]", "[section]")):
-            what = "Redirect" if (old or new).startswith(("[redirect]", "[final]")) else "Section status"
-            out.append({"label": f"{what} " + {"pair": "changed", "del": "removed", "ins": "added"}[kind],
-                        "before": [], "after": [], "delta": [], "find_before": "", "find_after": "", "image": "",
-                        "lines": (old or "", new or "")})
+        if (old or new or "").startswith(("[redirect]", "[final]", "[section]")):  # redirect info: one compact block
+            synth += [f"{sign} {ln}" for sign, ln in (("-", old), ("+", new)) if ln]
             continue
         c = {"label": {"pair": "Text edited", "del": "Text removed", "ins": "Text added"}[kind],
              "before": _match_units(chb, old) if old else [], "after": _match_units(cha, new) if new else [],
@@ -907,6 +904,9 @@ def source_changes(d, raw_before, raw_after):
             c["delta"], c["find_after"] = ["+ " + cut(mask_prices(_line_text(new)), 300)], _hint(_line_text(new))
         out.append(c)
 
+    if synth:
+        out.insert(0, {"label": "Redirect changed", "before": [], "after": [], "delta": [], "find_before": "",
+                       "find_after": "", "image": "", "block": synth})
     for k, ov, nv in d["meta"]:
         pat = re.compile(rf'(?:name|property)\s*=\s*["\']{re.escape(k)}["\']|^"{re.escape(k)}"\s*:', re.I)
 
@@ -946,10 +946,9 @@ def _compose_exact(name, url, stamp, d, kind, src, attached, max_changes=6):
     out = [f"**{name}** {kind} ({stamp})", url, "", f"What changed: {_summary(d)}",
            f"Source: view-source:{url} (the line numbers below are lines of that page source)"]
     for ch in src:  # a changed redirect: say where the link ends up now, right at the top
-        ln = (ch.get("lines") or ("", ""))[1]
-        if ln.startswith("[final]"):
-            out.insert(4, f"**The link now ends up at:** {ln.split(' ', 2)[2]}")
-            break
+        for ln in ch.get("block") or ():
+            if ln.startswith("+ [final]"):
+                out.insert(4, f"**The link now ends up at:** {ln.split(' ', 3)[3]}")
     for n, ch in enumerate(src[:max_changes], 1):
         out += ["", f"**{n}. {ch['label']}**" + (" (attached)" if ch["image"] in attached else "")]
         if ch["image"]:
@@ -962,10 +961,8 @@ def _compose_exact(name, url, stamp, d, kind, src, attached, max_changes=6):
             for u in ch[side]:
                 w = unit_where(u["text"])
                 out += [f"{side.capitalize()} (line {u['line']}{', ' + w if w else ''}):", "```html", _safe(unit_show(u, 3000)), "```"]
-        if ch.get("lines"):
-            for side, ln in zip(("Before", "After"), ch["lines"]):
-                if ln:
-                    out += [f"{side}:", "```", _safe(ln), "```"]
+        if ch.get("block"):
+            out += ["```diff"] + [_safe(x) for x in ch["block"]] + ["```"]
         elif not ch["before"] and not ch["after"]:
             out.append("(couldn't pin this one to a single source line, see the attached copies)")
         if ch["delta"]:
@@ -990,9 +987,8 @@ def _source_file(name, url, stamp, src):
             for u in ch[side]:
                 w = unit_where(u["text"])
                 out += ["", f"{side.upper()} (line {u['line']}{', ' + w if w else ''}):", unit_show(u)]
-        for side, ln in zip(("BEFORE", "AFTER"), ch.get("lines") or ()):
-            if ln:
-                out += ["", f"{side}:", ln]
+        if ch.get("block"):
+            out += ["", "CHANGED:"] + ch["block"]
         if ch["delta"]:
             out += ["", "CHANGED:"] + ch["delta"]
         out.append("")

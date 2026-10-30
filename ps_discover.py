@@ -27,7 +27,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote, urldefrag, urljoin
+from urllib.parse import quote, urldefrag, urljoin, urlsplit
 
 from ps_common import cut, send_alerts, to_lines
 from ps_feed_watch import _text, fetch, is_old, load_posts, parse_date, since_cutoff
@@ -88,13 +88,9 @@ SOURCES = [
     {"name": "dimensional-innovations", "label": "Dimensional Innovations", "kind": "feed", "interval": 120,
      "digest": "all", "urls": ["https://www.di.net/feed/"], "page": "https://www.di.net/",
      "fallback_links": {"include": r"/(project|news|work|case)"}},
-    {"name": "outfront", "label": "Outfront Media news", "kind": "feed", "interval": 120, "digest": "all",
-     "urls": [], "page": "https://www.outfront.com/news", "fallback_links": {"include": r"/news/"}},
-    {"name": "clearchannel", "label": "Clear Channel Outdoor news", "kind": "feed", "interval": 120, "digest": "all",
-     "urls": [], "page": "https://www.clearchanneloutdoor.com/news/", "fallback_links": {"include": r"/news/"}},
     # ---------------------------------------------------------------- Miami venue calendars
     {"name": "venue-kaseya", "label": "Kaseya Center events", "kind": "links", "interval": 120, "digest": "all",
-     "url": "https://www.kaseyacenter.com/events/", "include": r"/event"},
+     "url": "https://www.kaseyacenter.com/events/", "include": r"/events/detail/"},
     {"name": "venue-hardrock", "label": "Hard Rock Stadium events", "kind": "links", "interval": 120, "digest": "all",
      "url": "https://www.hardrockstadium.com/events/", "include": r"/event"},
     {"name": "venue-bayfront", "label": "Bayfront Park events", "kind": "links", "interval": 120, "digest": "all",
@@ -120,6 +116,10 @@ SOURCES = [
      "domains": ["rockstargames.com", "take2games.com", "rockstarwarehouse.com"]},
 ]
 
+# link texts that say nothing about the event / item they point at
+GENERIC_LINK = re.compile(
+    r"^(buy tickets?|tickets?|get tickets?|learn more|more info(rmation)?|read more|view (all|more|details)|details"
+    r"|see more|register|rsvp|book now|click here|find out more|shop now)$", re.I)
 A_RE = re.compile(r"""<a\b[^>]*?href\s*=\s*(?:"([^"]*)"|'([^']*)')[^>]*>(.*?)</a>""", re.I | re.S)
 PDF_BOILER = re.compile(
     r"^(registered lobbyists and active issues|principal name|issue description|registration|page \d+.*|\d+)$", re.I)
@@ -160,9 +160,12 @@ def run_links(src, st):
     if status != "ok":
         return [], status, []
     inc = re.compile(src["include"], re.I) if src.get("include") else None
+    base_host = urlsplit(src["url"]).netloc.lower().removeprefix("www.")
     items, seen = [], set()
     for text, full in anchors(data.decode("utf-8", "replace"), src["url"]):
-        if (inc and not inc.search(full)) or len(text) < src.get("min_text", 6) or full in seen:
+        host = urlsplit(full).netloc.lower().removeprefix("www.")
+        if ((inc and not inc.search(full)) or len(text) < src.get("min_text", 6) or full in seen
+                or GENERIC_LINK.match(text) or (src.get("same_domain", True) and not host.endswith(base_host))):
             continue
         seen.add(full)
         items.append(item(full, text, full))
@@ -194,6 +197,14 @@ def pdf_lines(data):
     return out
 
 
+def _pdf_date(s):
+    m = re.search(r"(\d{1,2})[-_/](\d{1,2})[-_/](20\d{2})", s)
+    if m:
+        return (int(m.group(3)), int(m.group(1)), int(m.group(2)))
+    m = re.search(r"(20\d{2})[-_/](\d{1,2})[-_/](\d{1,2})", s)
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3))) if m else (0, 0, 0)
+
+
 def run_pdf(src, st):
     status, data = fetch(src["page"])
     if status != "ok":
@@ -214,7 +225,7 @@ def run_pdf(src, st):
                     break
     if not links:
         return [], "no matching PDF link found", []
-    text, link = links[0]
+    text, link = max(links, key=lambda tu: (_pdf_date(f"{tu[0]} {tu[1]}"), tu[1]))  # newest dated PDF, stable choice
     status, pdf = fetch(link)
     if status != "ok":
         return [], f"PDF {status}", []
@@ -412,12 +423,13 @@ def build_digest(queue, sources_state, now, first):
             out.append(f"  ... and {len(ct) - 40} more")
     if not by and not ct:
         out.append("Nothing new to report.")
-    bad = [f"{n} ({s['status']})" for n, s in sources_state.items() if s.get("fails", 0) >= (1 if first else 3)]
+    bad = [f"{n} ({s['status']})" for n, s in sources_state.items()
+           if s.get("fails", 0) >= (1 if first else 3) and not s.get("bad_reported")]
     if first:
         working = sum(1 for s in sources_state.values() if s.get("baselined") and not s.get("fails"))
         out += ["", f"Source check: {working}/{len(sources_state)} sources working so far."]
     if bad:
-        out += ["Not working" + ("" if first else " (3+ failed runs in a row)") + ": " + ", ".join(bad)]
+        out += ["Not working" + ("" if first else " (3+ failed runs in a row)") + ", checked once a day from now on: " + ", ".join(bad)]
     out += ["! = could be a private / unannounced booking"] if any(q.get("mark") for q in queue) else []
     return "\n".join(out)
 
@@ -435,8 +447,11 @@ def main(now=None):
     cutoff = since_cutoff(state, now)
     sstate = state.setdefault("sources", {})
     queue = state.setdefault("queue", [])
-    due = [s for s in SOURCES
-           if now.timestamp() - sstate.setdefault(s["name"], {}).get("last_run", 0) >= s.get("interval", 60) * 60 - 90]
+    def is_due(s):
+        st = sstate.setdefault(s["name"], {})
+        minutes = max(s.get("interval", 60), 1440) if st.get("fails", 0) >= 6 else s.get("interval", 60)  # back off
+        return now.timestamp() - st.get("last_run", 0) >= minutes * 60 - 90
+    due = [s for s in SOURCES if is_due(s)]
 
     with ThreadPoolExecutor(max_workers=6) as pool:
         results = list(pool.map(lambda s: safe_run(s, sstate[s["name"]]), due))
@@ -450,7 +465,7 @@ def main(now=None):
             st["status"] = err
             print(f"[{src['name']}] problem: {err}", file=sys.stderr)
             continue
-        st["fails"], st["status"] = 0, "ok"
+        st["fails"], st["status"], st["bad_reported"] = 0, "ok", False
         if src["kind"] == "catalog":
             if st.get("_alert"):
                 outbox.append((None, {"text": st.pop("_alert"), "files": []}, []))
@@ -458,7 +473,10 @@ def main(now=None):
             print(f"[{src['name']}] ok: {len(st.get('catalog', {}))} items")
             continue
 
-        seen = st.get("seen", [])
+        key = "pdf_lines" if src["kind"] == "pdf" else "seen"  # a PDF is compared with its previous version only
+        if src["kind"] == "pdf" and key not in st:
+            st["baselined"] = False  # state saved by an older version: start over silently, don't replay the whole PDF
+        seen = st.get(key, [])
         seen_set = set(seen)
         fresh = [i for i in items if h(i["id"]) not in seen_set]
         stale = [i for i in fresh if is_old(i, cutoff)]  # published before the cutoff: remember, never report
@@ -493,7 +511,7 @@ def main(now=None):
                 batch, extra = flags[:MAX_ITEMS_PER_FLAG], len(flags) - MAX_ITEMS_PER_FLAG
                 outbox.append((src, {"text": flag_message(src, batch, max(0, extra)), "files": []}, flags))
             print(f"[{src['name']}] ok: {len(items)} items, {len(fresh)} new, {len(flags)} flagged")
-        st["seen"] = seen[-(5000 if src["kind"] == "pdf" else SEEN_CAP):]
+        st[key] = list(dict.fromkeys(h(i["id"]) for i in items)) if src["kind"] == "pdf" else seen[-SEEN_CAP:]
 
     # flagged messages are capped per run; the rest of the flagged items are not lost, they go to the digest
     to_send, spill = [], 0
@@ -508,7 +526,13 @@ def main(now=None):
     today = now.date().isoformat()
     digest = None
     if now.hour >= DIGEST_HOUR_UTC and state.get("digest_date") != today:
-        digest = {"text": build_digest(queue, sstate, now, first=not state.get("digest_date")), "files": []}
+        first = not state.get("digest_date")
+        newly_bad = [n for n, st in sstate.items() if st.get("fails", 0) >= (1 if first else 3) and not st.get("bad_reported")]
+        if queue or newly_bad or first:  # quiet days send nothing
+            digest = {"text": build_digest(queue, sstate, now, first=first), "files": []}
+        for s in sstate.values():  # a failing source is reported once, not every day
+            if s.get("fails", 0) >= (1 if first else 3):
+                s["bad_reported"] = True
         state["digest_date"] = today
         queue.clear()
     state["queue"] = queue[-1500:]

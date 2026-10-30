@@ -33,7 +33,7 @@ import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from ps_common import (UA, change_alert, gone_alert, image_originals, image_urls, live_alert, mask_prices, parse_meta,
                        parse_snapshot, send_alerts, sniff, to_lines, wayback_line, wayback_many)
@@ -63,7 +63,8 @@ KEYWORD_WATCH = {
 # (the element the #fragment points at; "section" is the fallback id). Alerts if the redirect goes somewhere
 # new, if a dedicated page appears, or if that section changes.
 SECTION_WATCH = {
-    "ps-gta6-features-link": {"url": "https://playstation.com/GTAVIfeatures", "lang": "en-AU", "section": "ps5-features"},
+    "ps-gta6-features-link": {"url": "https://playstation.com/GTAVIfeatures", "lang": "en-AU", "section": "ps5-features",
+                              "pin_locale": "en-us", "confirm": True},  # confirm = same change on 2 runs in a row
     # the same section on the AU page directly (the link sends Australians here, but our servers are in the US)
     "ps-gta6-features-au": {"url": "https://www.playstation.com/en-au/games/grand-theft-auto-vi/", "lang": "en-AU",
                             "section": "ps5-features"},
@@ -79,7 +80,7 @@ LOCAL_TZ = timezone(timedelta(hours=8))  # AWST, no DST
 PING_TEXT = "@everyone"   # set to "" to stop pinging everyone
 
 CONFIRM = False       # True = require the change on 2 consecutive runs before alerting
-SNAP_V = 3            # bump when the snapshot format changes (triggers a silent re-baseline); 3 = prices ignored
+SNAP_V = 4            # bump when the snapshot format changes (triggers a silent re-baseline); 4 = locale-stable redirects
 MAX_STATE = 150_000   # max chars of page text kept in the state file
 
 SNAP_DIR = Path(__file__).with_name("snapshots")   # last saved HTML of each page (the "before" copy)
@@ -137,6 +138,24 @@ def fetch(url):
         return f"http {e.code}", ""
     except Exception as e:  # network hiccup: skip, don't treat as a change
         return f"error: {e}", ""
+
+
+# playstation.com sends visitors to their own country's pages (/en-us/, /es-mx/, ...) based on where they are, and
+# GitHub's servers hop between regions. So locales are treated as the same thing when comparing redirects, and the
+# content is always read from one fixed locale.
+LOCALE_SEG = re.compile(r"^/([a-z]{2}(?:-[a-z]{2,4}){1,2})(?=/|$)", re.I)
+
+
+def norm_url(u):
+    sp = urlsplit(u)
+    return urlunsplit((sp.scheme, sp.netloc.replace(":443", ""), LOCALE_SEG.sub("/{locale}", sp.path), sp.query, sp.fragment))
+
+
+def pin_locale(u, locale):
+    sp = urlsplit(u)
+    if not LOCALE_SEG.match(sp.path):
+        return u
+    return urlunsplit((sp.scheme, sp.netloc, LOCALE_SEG.sub("/" + locale, sp.path, count=1), sp.query, ""))
 
 
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -212,8 +231,15 @@ def section_snapshot(url, cfg):
         return {"status": status}
     red = []
     for code, u, to, via in hops:
-        red.append(f"[redirect] {'meta refresh' if via == 'meta' else code} {u} -> {to}" if to else f"[final] {code} {u}")
+        red.append(f"[redirect] {'meta refresh' if via == 'meta' else code} {norm_url(u)} -> {norm_url(to)}" if to
+                   else f"[final] {code} {norm_url(u)}")
     frag = next((urlsplit(to).fragment.strip("/") for _, _, to, _ in hops if to and urlsplit(to).fragment), "")
+    if cfg.get("pin_locale"):  # read the page the link leads to in one fixed locale, wherever we happened to land
+        pinned = pin_locale(final_url, cfg["pin_locale"])
+        if pinned != final_url.split("#")[0]:
+            st2, body2 = fetch(pinned)
+            if st2 == "ok":
+                body = body2
     ids = [i for i in (frag, cfg.get("section", "")) if i]  # the redirect's own #fragment first, then our default
     eid, sec = "", None
     for i in ids:
@@ -434,6 +460,7 @@ def targets():
 def main():
     state = load_state()
     known = set(WATCH) | set(KEYWORD_WATCH) | set(SECTION_WATCH)
+    confirm_pages = {n for n, c in SECTION_WATCH.items() if c.get("confirm")}
     for gone in [k for k in state if k not in known]:  # removed from the lists: forget it completely
         del state[gone]
         try:
@@ -496,7 +523,7 @@ def main():
             if not old.get("wayback") and old.get("wb_fail", 0) < 4:
                 wb_jobs.append((name, url, None, None))  # never captured yet (or earlier tries failed)
             continue
-        if CONFIRM and old.get("pending") != new["hash"]:
+        if (CONFIRM or name in confirm_pages) and old.get("pending") != new["hash"]:
             old["pending"] = new["hash"]  # first sighting, wait for the next run
             pending.append(name)
             continue
