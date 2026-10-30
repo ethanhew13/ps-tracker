@@ -756,12 +756,14 @@
   "adage": {
    "last_run": 1793346341.855271,
    "fails": 221,
-   "status": "no working feed found"
+   "status": "no working feed found",
+   "bad_reported": true
   },
   "thedrum": {
    "last_run": 1793346341.855271,
    "fails": 221,
-   "status": "no working feed found"
+   "status": "no working feed found",
+   "bad_reported": true
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
@@ -835,12 +837,14 @@
   "outfront": {
    "last_run": 1793345470.016967,
    "fails": 111,
-   "status": "http 404"
+   "status": "http 404",
+   "bad_reported": true
   },
   "clearchannel": {
    "last_run": 1793345470.016967,
    "fails": 111,
-   "status": "http 404"
+   "status": "http 404",
+   "bad_reported": true
   },
   "venue-kaseya": {
    "last_run": 1793359860.970784,
@@ -1014,12 +1018,14 @@
   "venue-mbcc": {
    "last_run": 1793345470.016967,
    "fails": 111,
-   "status": "http 403"
+   "status": "http 403",
+   "bad_reported": true
   },
   "faa-tfr": {
    "last_run": 1793346341.855271,
    "fails": 221,
-   "status": "too little text (JavaScript page or blocked?)"
+   "status": "too little text (JavaScript page or blocked?)",
+   "bad_reported": true
   },
   "lobby-miami-beach": {
    "last_run": 1793352654.583851,
@@ -22633,7 +22639,8 @@
   "merch-store": {
    "last_run": 1793346341.855271,
    "fails": 441,
-   "status": "catalog request failed or came back empty"
+   "status": "catalog request failed or came back empty",
+   "bad_reported": true
   },
   "cert-transparency": {
    "ct_done": {
@@ -22947,43 +22954,7 @@
    "bad_reported": false
   }
  },
- "queue": [
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "7937 new items at once, looks like a layout change, re-baselined quietly"
-  },
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "12393 new items at once, looks like a layout change, re-baselined quietly"
-  },
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "7937 new items at once, looks like a layout change, re-baselined quietly"
-  },
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "12393 new items at once, looks like a layout change, re-baselined quietly"
-  },
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "7937 new items at once, looks like a layout change, re-baselined quietly"
-  },
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "12393 new items at once, looks like a layout change, re-baselined quietly"
-  },
-  {
-   "label": "City of Miami lobbyist list",
-   "url": "https://archive.miami.gov/City_Clerk/pages/lobbyist/lobbyist.asp",
-   "title": "7937 new items at once, looks like a layout change, re-baselined quietly"
-  }
- ],
- "digest_date": "2026-10-29",
+ "queue": [],
+ "digest_date": "2026-10-30",
  "_since": "2026-10-21T16:00:00+00:00"
 }
