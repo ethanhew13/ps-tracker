@@ -973,7 +973,8 @@
     "d1b5ee30fe62",
     "efe2c4b32525",
     "fb3798655581"
-   ]
+   ],
+   "bad_reported": true
   },
   "venue-bayfront": {
    "last_run": 1793446260.028888,
@@ -23002,14 +23003,7 @@
    "bad_reported": false
   }
  },
- "queue": [
-  {
-   "label": "Kaseya Center events",
-   "title": "Ryan Castro",
-   "url": "https://www.kaseyacenter.com/events/detail/ryan-castro-1",
-   "mark": false
-  }
- ],
- "digest_date": "2026-10-30",
+ "queue": [],
+ "digest_date": "2026-10-31",
  "_since": "2026-10-21T16:00:00+00:00"
 }
