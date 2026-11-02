@@ -1154,7 +1154,7 @@
    "bad_reported": true
   },
   "lobby-miami-beach": {
-   "last_run": 1793633478.149595,
+   "last_run": 1793644262.641668,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -6222,7 +6222,7 @@
     "a115031160c3",
     "92908ad4585e",
     "2ba1883d9245",
-    "f61191ad7827",
+    "afcdf1d31d2e",
     "b149ee4455b4",
     "1c026de775cf",
     "079823e9bd15",
@@ -6337,6 +6337,10 @@
     "0a45e103b872",
     "254a73ad21d3",
     "4d422da98ad6",
+    "ee7c1f404fbd",
+    "04407c6f0940",
+    "d2adb31c8db2",
+    "e6559c723906",
     "3c2b0f5490cc",
     "dc6b12661efa",
     "b89d8c61f8db",
@@ -6639,6 +6643,8 @@
     "8d5e25193c19",
     "7f6194a71e25",
     "051b0ca31583",
+    "5ced37d52cb0",
+    "ae4740c57aec",
     "60fdb5033125",
     "ef7e5c681433",
     "d1092adf3a5a",
@@ -6703,7 +6709,6 @@
     "d15b7089e29d",
     "779805009d4f",
     "f00020453ea9",
-    "ee7c1f404fbd",
     "912f5e8cbaa6",
     "9e8e0616490a",
     "7f0883b16ebe",
@@ -8527,6 +8532,7 @@
     "418b7c56ff0f",
     "3d865a2bb370",
     "f0033b2a5ef7",
+    "4755d0feffff",
     "1663055b1103",
     "0c44379e2143",
     "ab8ce85b8571",
@@ -8623,6 +8629,17 @@
     "aac4a1e78ea7",
     "6f3ecfad37f3",
     "4bb99afd95a6",
+    "b0e146af357b",
+    "681aa3a038e4",
+    "cfc6af37750c",
+    "90fffaa2a250",
+    "757ab5222fa1",
+    "1d58bf3dee7d",
+    "3a93a7e11610",
+    "946af2db601a",
+    "8a8a0225339f",
+    "f799e66675e0",
+    "01cbc3596632",
     "e9d8a899943a",
     "955e97d91f33",
     "b0d3391ab9f9",
@@ -8679,6 +8696,7 @@
     "a0413ac11f5c",
     "bf981bce8635",
     "1c4b0e35bd3a",
+    "d1cee45782f0",
     "d2a14a77cdfe",
     "0e3d052822ba",
     "9b1b795ee992",
@@ -8951,6 +8969,11 @@
     "e6e2e61d1b65",
     "e5440d5dd082",
     "d552b5307dff",
+    "c9c35312a505",
+    "5b2d046413c9",
+    "befb2ceb3a23",
+    "9068d602deb2",
+    "a74ecb4aec0e",
     "f2df2b1eba3a",
     "06810c492d22",
     "044d6d360d72",
@@ -9354,7 +9377,7 @@
    ]
   },
   "lobby-miami": {
-   "last_run": 1793633478.149595,
+   "last_run": 1793644262.641668,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23080,7 +23103,13 @@
    "bad_reported": false
   }
  },
- "queue": [],
+ "queue": [
+  {
+   "label": "Miami Beach lobbyist list",
+   "url": "https://www.miamibeachfl.gov/city-hall/city-clerk/lobbyist-information/",
+   "title": "56 new items at once, looks like a layout change, re-baselined quietly"
+  }
+ ],
  "digest_date": "2026-11-02",
  "_since": "2026-10-21T16:00:00+00:00"
 }
