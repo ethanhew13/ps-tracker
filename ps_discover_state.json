@@ -23055,14 +23055,7 @@
    "bad_reported": false
   }
  },
- "queue": [
-  {
-   "label": "Kaseya Center events",
-   "title": "Sacramento Kings vs Miami HEAT",
-   "url": "https://www.kaseyacenter.com/events/detail/sacramento-kings-vs-miami-heat-11",
-   "mark": false
-  }
- ],
- "digest_date": "2026-11-01",
+ "queue": [],
+ "digest_date": "2026-11-02",
  "_since": "2026-10-21T16:00:00+00:00"
 }
