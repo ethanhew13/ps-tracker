@@ -462,7 +462,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1793799956.875115,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -757,7 +757,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1793799956.875115,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -905,7 +905,9 @@
     "3c13ec0fed3e",
     "dc979f937d85",
     "af847f390ade",
-    "ef829511a8af"
+    "ef829511a8af",
+    "a0d5ffb3404c",
+    "83cf32f85d2a"
    ],
    "bad_reported": false
   },
@@ -923,7 +925,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1793799956.875115,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -977,13 +979,14 @@
     "33a50304aa20",
     "60051f5b5778",
     "773e5c64adaf",
-    "9d2b2dd20f50"
+    "9d2b2dd20f50",
+    "5e8108981aa0"
    ],
    "bad_reported": false
   },
   "dimensional-innovations": {
    "feed_url": "https://www.di.net/feed/",
-   "last_run": 1793796376.147987,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1016,7 +1019,7 @@
    "bad_reported": true
   },
   "venue-kaseya": {
-   "last_run": 1793796376.147987,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1100,7 +1103,7 @@
    "bad_reported": true
   },
   "venue-bayfront": {
-   "last_run": 1793796376.147987,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -22845,10 +22848,10 @@
    },
    "ct_after": {
     "rockstargames.com": "18153995946",
-    "take2games.com": "18109581423",
+    "take2games.com": "18170583505",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1793799956.875115,
+   "last_run": 1793803554.236443,
    "fails": 0,
    "status": "ok",
    "baselined": true,
