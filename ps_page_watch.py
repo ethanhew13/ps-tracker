@@ -56,8 +56,7 @@ WATCH = {
 }
 
 KEYWORD_WATCH = {
-    "sitemap": "https://www.playstation.com/en-us/site-map/",
-    "support-games-list": "https://www.playstation.com/en-us/support/games/?category=game-support&subCategory=support-for-specific-games",
+    "sitemap": "https://www.playstation.com/en-us/site-map/"
 }
 
 # Links that redirect somewhere: tracks the redirect hop by hop plus one section of the page it lands on
