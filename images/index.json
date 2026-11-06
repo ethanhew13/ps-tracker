@@ -18,6 +18,9 @@
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/activation-vi-palms.jpg": {
   "failed": 3
  },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-banner-wynwood.jpg": {
+  "failed": 2
+ },
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-banner.jpg": {
   "failed": 3
  },
@@ -33,11 +36,29 @@
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-product-souvenir-tee.jpg": {
   "failed": 3
  },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-product-vice-city-bomber.jpg": {
+  "failed": 2
+ },
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-product-vice-city-crop.jpg": {
   "failed": 3
  },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-product-vice-city-neon-sign.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-product-vice-city-palms-snapback.jpg": {
+  "failed": 2
+ },
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-product-vice-city-pool.jpg": {
   "failed": 3
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-vice-city-bomber.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-vice-city-grillz-tee-johnson.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-vice-city-pool-tee-giannis.jpg": {
+  "failed": 2
  },
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/collection-vice-city-pool-tee.jpg": {
   "failed": 3
@@ -54,6 +75,24 @@
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/game-milwaukee-bucks.png": {
   "failed": 3
  },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-1-vice-city.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-2-shorts.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-3-cactus-jack-patch.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-4-cactus-jack-edition-tag.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-5-gta-vi-patch.jpg": {
+  "failed": 2
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-banner-heat-vice-city.jpg": {
+  "failed": 1
+ },
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/jersey-banner-silhouette.jpg": {
   "failed": 3
  },
@@ -62,6 +101,9 @@
  },
  "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/skyline-miami.jpg": {
   "failed": 3
+ },
+ "https://cdn.nba.com/teams/static/heat/images/uniforms/2627-vice-city/uniform-banner-heat-shorts.jpg": {
+  "failed": 1
  },
  "https://cdn.shopify.com/s/files/1/0024/9803/5810/files/logo.png": {
   "bytes": 2170,
