@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794258077.368551,
+   "last_run": 1794259858.009047,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -352,13 +352,16 @@
     "ce91ee0b9aa5",
     "4c389bc812ff",
     "a0c1772db11c",
-    "34087539f649"
+    "34087539f649",
+    "7c5b5653c51d",
+    "e29afb6a5e10",
+    "4deeac71b1b4"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794258077.368551,
+   "last_run": 1794259858.009047,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1426,7 +1429,7 @@
    "bad_reported": true
   },
   "lobby-miami-beach": {
-   "last_run": 1794249114.207165,
+   "last_run": 1794259858.009047,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -9649,7 +9652,7 @@
    ]
   },
   "lobby-miami": {
-   "last_run": 1794249114.207165,
+   "last_run": 1794259858.009047,
    "fails": 0,
    "status": "ok",
    "baselined": true,
