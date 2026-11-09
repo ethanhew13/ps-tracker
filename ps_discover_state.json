@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794223859.892515,
+   "last_run": 1794225672.033711,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -289,13 +289,14 @@
     "50cd4c3fe257",
     "586642961498",
     "2fe452f20570",
-    "9d2a1e5af624"
+    "9d2a1e5af624",
+    "1df6534a0c33"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794223859.892515,
+   "last_run": 1794225672.033711,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -503,7 +504,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794222062.925692,
+   "last_run": 1794225672.033711,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -803,13 +804,14 @@
     "701ef993be20",
     "3ff9e5c8ebbd",
     "0fe5225c8382",
-    "f651abb142fc"
+    "f651abb142fc",
+    "21e90aa4fda0"
    ],
    "bad_reported": false
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794222062.925692,
+   "last_run": 1794225672.033711,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1003,7 +1005,11 @@
     "ea7f43ef75ca",
     "28af15d2afb1",
     "6ddb4de5588e",
-    "47324e17248c"
+    "47324e17248c",
+    "7d886363d2b9",
+    "ee6119151f36",
+    "33acb9c70fda",
+    "ee4db8fd9e01"
    ],
    "bad_reported": false
   },
@@ -1021,7 +1027,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794222062.925692,
+   "last_run": 1794225672.033711,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -22961,7 +22967,7 @@
     "take2games.com": "18266787484",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794222062.925692,
+   "last_run": 1794225672.033711,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23263,14 +23269,7 @@
    "bad_reported": false
   }
  },
- "queue": [
-  {
-   "label": "Kaseya Center events",
-   "title": "Chicago Bulls vs Miami HEAT",
-   "url": "https://www.kaseyacenter.com/events/detail/chicago-bulls-vs-miami-heat-21",
-   "mark": false
-  }
- ],
- "digest_date": "2026-11-08",
+ "queue": [],
+ "digest_date": "2026-11-09",
  "_since": "2026-10-21T16:00:00+00:00"
 }
