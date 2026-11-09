@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794263460.207254,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -358,13 +358,14 @@
     "4deeac71b1b4",
     "d5daf4761427",
     "c7091c113266",
-    "74b8cb7a3053"
+    "74b8cb7a3053",
+    "78125b7563d0"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794263460.207254,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -585,13 +586,15 @@
     "0a3a3371335b",
     "a0c1772db11c",
     "c98525a2d771",
-    "2bb252f91c74"
+    "2bb252f91c74",
+    "78125b7563d0",
+    "ce91ee0b9aa5"
    ],
    "bad_reported": false
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794261669.407681,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -907,13 +910,14 @@
     "72266f6f0e03",
     "38c1879574ee",
     "929fc3475e51",
-    "303ec269a19d"
+    "303ec269a19d",
+    "80775492a0d0"
    ],
    "bad_reported": false
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794261669.407681,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1143,7 +1147,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794261669.407681,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1217,7 +1221,7 @@
   },
   "dimensional-innovations": {
    "feed_url": "https://www.di.net/feed/",
-   "last_run": 1794258077.368551,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1250,7 +1254,7 @@
    "bad_reported": true
   },
   "venue-kaseya": {
-   "last_run": 1794258077.368551,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1335,7 +1339,7 @@
    "bad_reported": true
   },
   "venue-bayfront": {
-   "last_run": 1794258077.368551,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23085,7 +23089,7 @@
     "take2games.com": "18266787484",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794261669.407681,
+   "last_run": 1794265268.492967,
    "fails": 0,
    "status": "ok",
    "baselined": true,
