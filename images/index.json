@@ -417,6 +417,13 @@
   "bytes": 9780,
   "file": "ba7d87c8ed24142c.png"
  },
+ "https://vectormedia.com/wp-content/themes/vector-brand/assets/img/favicon.svg": {
+  "bytes": 2916,
+  "file": "51b3ff563b8a26cb.svg"
+ },
+ "https://vectormedia.com/wp-content/themes/vector-brand/assets/img/logo-primary.svg": {
+  "failed": 3
+ },
  "https://vectormedia.com/wp-content/uploads/2024/04/INDIO_CC_FW_RepublicRecords_NAV_04.24-25.jpg": {
   "bytes": 1040186,
   "file": "ac3ff413a2af9d79.jpg"
@@ -572,6 +579,30 @@
  "https://vectormedia.com/wp-content/uploads/2026/06/250224023-0_New-York_None_None_UnknownBrand_UnknownDate-5.jpg": {
   "bytes": 2217390,
   "file": "d508eb8aa1b1996b.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/06/260311015-0_HOU_DD_FW_BostonBeerCo_Truly_06-26-1.jpg": {
+  "bytes": 2954799,
+  "file": "e6703738ee9443a4.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/06/260311015-0_HOU_DD_FW_BostonBeerCo_Truly_06-26-6.jpg": {
+  "bytes": 2829462,
+  "file": "0c36e99a2a8d992c.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/06/download-1.jpeg": {
+  "bytes": 92847,
+  "file": "dd38e59b937dd196.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/06/download.jpeg": {
+  "bytes": 92847,
+  "file": "1cf807060d73e5cb.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/07/1-260309036-0_LA_DD_FW_Minions3_SoFi_07.26-63.jpg": {
+  "bytes": 3119784,
+  "file": "e7bd3b7eb0933cd0.jpg"
+ },
+ "https://vectormedia.com/wp-content/uploads/2026/07/250225037-0_DAL_StationDomination_Choctaw-Casino_06-26-29.jpg": {
+  "bytes": 2690630,
+  "file": "205f5ba18dd8f232.jpg"
  },
  "https://vectormedia.com/wp-content/uploads/2026/07/260227003-0_NYC_CustomCoach_Gotham_7-26-11.jpg": {
   "bytes": 2817954,
