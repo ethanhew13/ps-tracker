@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794310267.227886,
+   "last_run": 1794312068.339928,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -396,7 +396,7 @@
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794310267.227886,
+   "last_run": 1794312068.339928,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -630,13 +630,14 @@
     "f1d4819ae951",
     "234484d08377",
     "0f33dc800e88",
-    "11e328b85603"
+    "11e328b85603",
+    "c61c31e9ef8b"
    ],
    "bad_reported": false
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794308483.064982,
+   "last_run": 1794312068.339928,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -957,13 +958,14 @@
     "be78cedaee52",
     "3af03b9fd8b9",
     "8547d93c74e8",
-    "ec209ddb95e7"
+    "ec209ddb95e7",
+    "c61c31e9ef8b"
    ],
    "bad_reported": false
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794308483.064982,
+   "last_run": 1794312068.339928,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1176,7 +1178,8 @@
     "792309578b9a",
     "bcd80d58d16c",
     "30b7233d2a2c",
-    "555e98fbf357"
+    "555e98fbf357",
+    "eb08494ebe85"
    ],
    "bad_reported": false
   },
@@ -1194,7 +1197,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794308483.064982,
+   "last_run": 1794312068.339928,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23213,7 +23216,7 @@
     "take2games.com": "18288339252",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794308483.064982,
+   "last_run": 1794312068.339928,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23515,19 +23518,7 @@
    "bad_reported": false
   }
  },
- "queue": [
-  {
-   "label": "Google News: GTA VI + Miami",
-   "title": "NBA picks Miami for 2028 All-Star weekend, AP source says - WPBF",
-   "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPcnBETFRldGhiQVpRcFoxOGI3cVhIZUNmRldIQ2F3R05tM19oQzNBMTdIUURCM29yeW90NVZCTkgtcEVwVkZPSzlsWnhVTWhhRTRrUHBhWmRIaVhwaW9FaVE4LU9EN2VlSGpLVFlfcVVTcWJJTDUwTXhrRTBSM2RGODk1NUthUm5pR1BvRjhPdHprcnJGR0t6SE5R?oc=5",
-   "mark": false
-  },
-  {
-   "label": "Miami Beach lobbyist list",
-   "url": "https://www.miamibeachfl.gov/city-hall/city-clerk/lobbyist-information/",
-   "title": "144 new items at once, looks like a layout change, re-baselined quietly"
-  }
- ],
- "digest_date": "2026-11-09",
+ "queue": [],
+ "digest_date": "2026-11-10",
  "_since": "2026-10-21T16:00:00+00:00"
 }
