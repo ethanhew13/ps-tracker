@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794353468.009012,
+   "last_run": 1794355275.484018,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -421,13 +421,14 @@
     "bf6b904f30c4",
     "d0469ababd10",
     "01ed70103438",
-    "0651173099dd"
+    "0651173099dd",
+    "0d105a8f3b0e"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794353468.009012,
+   "last_run": 1794355275.484018,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -677,7 +678,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794351672.65584,
+   "last_run": 1794355275.484018,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1008,7 +1009,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794351672.65584,
+   "last_run": 1794355275.484018,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1238,7 +1239,8 @@
     "643523c4d7f7",
     "e9b7e5dbac5d",
     "8f9d98340c67",
-    "bf0f6117c082"
+    "bf0f6117c082",
+    "88cfcba2ec33"
    ],
    "bad_reported": false
   },
@@ -1256,7 +1258,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794351672.65584,
+   "last_run": 1794355275.484018,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23280,7 +23282,7 @@
     "take2games.com": "18288339252",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794351672.65584,
+   "last_run": 1794355275.484018,
    "fails": 0,
    "status": "ok",
    "baselined": true,
