@@ -1332,14 +1332,14 @@
    "bad_reported": false
   },
   "adage": {
-   "last_run": 1794469547.699936,
-   "fails": 234,
+   "last_run": 1794555970.691858,
+   "fails": 235,
    "status": "no working feed found",
    "bad_reported": true
   },
   "thedrum": {
-   "last_run": 1794469547.699936,
-   "fails": 234,
+   "last_run": 1794555970.691858,
+   "fails": 235,
    "status": "no working feed found",
    "bad_reported": true
   },
@@ -1646,8 +1646,8 @@
    "bad_reported": true
   },
   "faa-tfr": {
-   "last_run": 1794469547.699936,
-   "fails": 234,
+   "last_run": 1794555970.691858,
+   "fails": 235,
    "status": "too little text (JavaScript page or blocked?)",
    "bad_reported": true
   },
@@ -23361,8 +23361,8 @@
    ]
   },
   "merch-store": {
-   "last_run": 1794469547.699936,
-   "fails": 454,
+   "last_run": 1794555970.691858,
+   "fails": 455,
    "status": "catalog request failed or came back empty",
    "bad_reported": true
   },
