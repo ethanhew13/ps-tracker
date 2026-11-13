@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794580261.273403,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -475,7 +475,7 @@
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794580261.273403,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -739,7 +739,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794578469.39863,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1080,7 +1080,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794578469.39863,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1333,7 +1333,9 @@
     "c7ac32ba0e9a",
     "072274e70bb0",
     "1d27c445ca5c",
-    "29a2f1c5ede9"
+    "29a2f1c5ede9",
+    "ceaed558c1d3",
+    "8e6e4f600b2b"
    ],
    "bad_reported": false
   },
@@ -1351,7 +1353,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794578469.39863,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1430,13 +1432,14 @@
     "2aa7f8d63533",
     "f0093dfad07b",
     "7f14a166ff34",
-    "b9b77865fed9"
+    "b9b77865fed9",
+    "4115eed265bc"
    ],
    "bad_reported": false
   },
   "dimensional-innovations": {
    "feed_url": "https://www.di.net/feed/",
-   "last_run": 1794574873.820857,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1469,7 +1472,7 @@
    "bad_reported": true
   },
   "venue-kaseya": {
-   "last_run": 1794574873.820857,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1556,7 +1559,7 @@
    "bad_reported": true
   },
   "venue-bayfront": {
-   "last_run": 1794574873.820857,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23383,7 +23386,7 @@
     "take2games.com": "18288339252",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794578469.39863,
+   "last_run": 1794582071.512717,
    "fails": 0,
    "status": "ok",
    "baselined": true,
