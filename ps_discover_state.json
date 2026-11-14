@@ -754,7 +754,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794654069.807004,
+   "last_run": 1794657666.428579,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1108,7 +1108,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794654069.807004,
+   "last_run": 1794657666.428579,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1388,7 +1388,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794654069.807004,
+   "last_run": 1794657666.428579,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23424,7 +23424,7 @@
     "take2games.com": "18288339252",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794654069.807004,
+   "last_run": 1794657666.428579,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23726,20 +23726,7 @@
    "bad_reported": false
   }
  },
- "queue": [
-  {
-   "label": "Bayfront Park events",
-   "title": "Christmas Tree Lighting",
-   "url": "https://www.bayfrontparkmiami.com/events/christmas-tree-lighting-2026",
-   "mark": false
-  },
-  {
-   "label": "Kaseya Center events",
-   "title": "Charlotte Hornets vs Miami HEAT",
-   "url": "https://www.kaseyacenter.com/events/detail/charlotte-hornets-vs-miami-heat-27",
-   "mark": false
-  }
- ],
- "digest_date": "2026-11-13",
+ "queue": [],
+ "digest_date": "2026-11-14",
  "_since": "2026-10-21T16:00:00+00:00"
 }
