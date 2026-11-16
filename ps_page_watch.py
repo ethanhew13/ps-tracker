@@ -47,8 +47,6 @@ WATCH = {
     # first-party storefronts only (no third-party retailers); these are the pages saved to the Wayback Machine
     "store-au-standard": "https://store.playstation.com/en-au/product/EP1004-PPSA01547_00-GTAVISTANDARD001",
     "store-au-ultimate": "https://store.playstation.com/en-au/product/EP1004-PPSA01547_00-GTAVIULTIMATE001",
-    "xbox-gta6-au": "https://www.xbox.com/en-AU/games/store/grand-theft-auto-vi/9p3h4968grsm",
-    "xbox-gta6-au-2": "https://www.xbox.com/en-AU/games/store/grand-theft-auto-vi/9nl3wwnzlzzn",
     "heat-vice-city-uniforms": "https://www.nba.com/heat/uniforms/2627-heat-vice-city-uniform-collection",
     "nz-oflc-gta6": "https://www.classificationoffice.govt.nz/find-a-rating/quick-takes/grand-theft-auto-vi/",
     "vector-work": "https://vectormedia.com/work/",
