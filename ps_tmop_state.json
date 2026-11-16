@@ -11,7 +11,7 @@
     "ts": "1791906697153",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "52bacdd3006fe724ea83e3947f99d15ed8d7e501"
+    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
   },
   "en-au": {
     "status": "ok",
@@ -53,7 +53,7 @@
     "ts": "1791906672397",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "891b2c3b6b430d42a887a7e435d0c672675507dd"
+    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
   },
   "en-za": {
     "status": "ok",
@@ -102,14 +102,14 @@
     "ts": "1791906647111",
     "title": "Diesen Monat bei PlayStation | Ver\u00f6ffentlichungen f\u00fcr PS5\u00a0\u2013 Oktober 2026",
     "desc": "Entdecke die gr\u00f6\u00dften Neuver\u00f6ffentlichungen, die im Oktober 2026 f\u00fcr PlayStation 5 erscheinen, darunter mit Spannung erwartete Titel von Konami, S-Game und Activision.",
-    "hash": "0f7588e83834c53be923927d0b608421a1ea1b1c"
+    "hash": "d86f8dbfc735cdd642118cdeea636097c814c178"
   },
   "de-at": {
     "status": "ok",
     "ts": "1791906644147",
     "title": "Diesen Monat bei PlayStation | Ver\u00f6ffentlichungen f\u00fcr PS5\u00a0\u2013 Oktober 2026",
     "desc": "Entdecke die gr\u00f6\u00dften Neuver\u00f6ffentlichungen, die im Oktober 2026 f\u00fcr PlayStation 5 erscheinen, darunter mit Spannung erwartete Titel von Konami, S-Game und Activision.",
-    "hash": "d86f8dbfc735cdd642118cdeea636097c814c178"
+    "hash": "157390689ec7c859548f0db14f5b5da4ae0d7a15"
   },
   "de-ch": {
     "status": "ok",
@@ -193,7 +193,7 @@
     "ts": "1791906759187",
     "title": "Este m\u00eas na PlayStation | Lan\u00e7amentos para a PS5: outubro de 2026",
     "desc": "Descobre os principais lan\u00e7amentos que v\u00e3o chegar \u00e0 PlayStation 5 em outubro de 2026, incluindo t\u00edtulos muito aguardados da Konami, S-Game e Activision.",
-    "hash": "25b6b4f1ce4569831b4274c7f091929701262e63"
+    "hash": "ea9d7711063c1f4760d713bc88834d938dcec67c"
   },
   "pt-br": {
     "status": "ok",
@@ -242,14 +242,14 @@
     "ts": "1791906757506",
     "title": "W tym miesi\u0105cu na PlayStation | Premiery PS5 \u2013 pa\u017adziernik 2026 r.",
     "desc": "Odkryj najwi\u0119ksze premiery, kt\u00f3re pojawi\u0105 si\u0119 na PlayStation 5 w pa\u017adzierniku 2026 roku, w tym gor\u0105co oczekiwane tytu\u0142y od Konami, S-Game i Activision.",
-    "hash": "c1a69c47301405db48daf42ade90c534f1565e96"
+    "hash": "7992dff7fe017a2bf6a296eeb97f8ab343d8774d"
   },
   "cs-cz": {
     "status": "ok",
     "ts": "1791906729142",
     "title": "Tento m\u011bs\u00edc na PlayStation | Hry vydan\u00e9 na PS5 b\u011bhem \u0159\u00edjna 2026",
     "desc": "Objev nejv\u011bt\u0161\u00ed hry, kter\u00e9 v \u0159\u00edjnu 2026 doraz\u00ed na PlayStation 5, v\u010detn\u011b velmi o\u010dek\u00e1van\u00fdch hit\u016f od spole\u010dnost\u00ed Konami, S-Game a Activision.",
-    "hash": "b46bd3e73da5d882f2e8d0a6aa88f13ebfd7d564"
+    "hash": "fdd48d3b642c44ba1b2b79ca2e392690896ec9f8"
   },
   "el-gr": {
     "status": "ok",
@@ -280,6 +280,6 @@
     "ts": "1791857221307",
     "title": "PlayStation \uc774\ubc88 \ub2ec \uc18c\uc2dd | PS4 \ubc0f PS5 \uc2e0\uc791 - 2026\ub144 10\uc6d4",
     "desc": "2026\ub144 10\uc6d4, PlayStation 5\ub85c \ucd9c\uc2dc\ub418\ub294 \uc8fc\uc694 \uc2e0\uc791\uc744 \uc18c\uac1c\ud569\ub2c8\ub2e4. \ucf54\ub098\ubbf8, S-GAME, \uc561\ud2f0\ube44\uc804\uc758 \ud654\uc81c\uc791\uc744 \ube44\ub86f\ud574 \ub9ce\uc740 \uae30\ub300\ub97c \ubaa8\uc73c\uace0 \uc788\ub294 \ud0c0\uc774\ud2c0\ub4e4\uc744 \ud655\uc778\ud574 \ubcf4\uc138\uc694.",
-    "hash": "31b6392d4b9d086b432a1a8a0b33117d818feaee"
+    "hash": "1e25f37ba7baae6128681c36bc8102158a025113"
   }
 }
