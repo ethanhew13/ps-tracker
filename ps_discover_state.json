@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794834946.800331,
+   "last_run": 1794837681.282867,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -509,13 +509,15 @@
     "8dc6eae9e12e",
     "412c10eebccd",
     "c8568df56961",
-    "40d192200ff4"
+    "40d192200ff4",
+    "e524e6b04dc1",
+    "cf951bd66090"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794834946.800331,
+   "last_run": 1794837681.282867,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -788,7 +790,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794834136.689025,
+   "last_run": 1794837681.282867,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1146,7 +1148,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794834136.689025,
+   "last_run": 1794837681.282867,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1409,7 +1411,8 @@
     "4b4882aa6e8c",
     "b0ebb951a770",
     "3e8707ab40b9",
-    "816864d47337"
+    "816864d47337",
+    "8ba7cdedd7f4"
    ],
    "bad_reported": false
   },
@@ -1427,7 +1430,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794834136.689025,
+   "last_run": 1794837681.282867,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23466,7 +23469,7 @@
     "take2games.com": "18406855653",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794834136.689025,
+   "last_run": 1794837681.282867,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23768,7 +23771,14 @@
    "bad_reported": false
   }
  },
- "queue": [],
+ "queue": [
+  {
+   "label": "Google News: GTA VI + Miami",
+   "title": "Miami places near the top, Port St. Lucie near the bottom of 'sinful cities' list - WPDE",
+   "url": "https://news.google.com/rss/articles/CBMi6AJBVV95cUxOUFBobFFuYkJlY2hLVnVtU0VqMXNoWkhMYUhFTExnRzk3R1E3QTBxZTFPZVlXaXZwbU40cGhZN0MzZjFadmpnWEZTQUVUUlVEVzdJZmx1aDlBQW5LbFBrWE1KQkxqMVVleHBqTFVLM193NlpDX01fcDZlUldSODlEN2J4bW9RMVg2YTV0RWcycnRBeXpEVWFUbEFwWmJycTJxNG1DZnYxQllYRXhBXzZqbDhybFNyTzJjNTNTVTl3UkV6VGRscnVGRzJfUFZDVHBLRW8wU19nQTJlWHV5dnpsMGpfMmJmam0tbV9WY0J4VkVDcklZS0hIdUwyUzduSjlERHhUdFN3TUh6b3RIRlZYd2FQS1pGX3RZQU11VVRsdXM5UzFsYlVjNFh3YUZtUmQxc0hsc0MwOGtOSUZRMTYwdzd4a0h3MmIyc21DMmUyNTFoSkpJbTQzSTI1dGt3SVpIc1BkdlJmRFI?oc=5",
+   "mark": false
+  }
+ ],
  "digest_date": "2026-11-16",
  "_since": "2026-10-21T16:00:00+00:00"
 }
