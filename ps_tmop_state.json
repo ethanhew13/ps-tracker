@@ -18,7 +18,7 @@
     "ts": "1791906647101",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "70b706ad1a376c745d8980dc2266508e5cd8a06e"
+    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
   },
   "en-ca": {
     "status": "ok",
@@ -67,7 +67,7 @@
     "ts": "1791906716268",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
+    "hash": "74781f71da7414ce85dc54381e832fc0de3edfa4"
   },
   "en-sg": {
     "status": "ok",
@@ -137,7 +137,7 @@
     "ts": "1791906640143",
     "title": "Ce mois-ci sur PlayStation | Sorties PS5 - Octobre 2026",
     "desc": "D\u00e9couvrez les plus grandes nouveaut\u00e9s \u00e0 venir sur PlayStation 5 en octobre 2026, avec des sorties tr\u00e8s attendues de Konami, S-Game et Activision.",
-    "hash": "ff3f192b18699be482894cbf9d2c27f49ee72c64"
+    "hash": "665432022452f2883e6053c3eb5aa74ac0809094"
   },
   "es-es": {
     "status": "ok",
@@ -151,7 +151,7 @@
     "ts": "1791906645471",
     "title": "Este mes en PlayStation | Lanzamientos de PS5: octubre de 2026",
     "desc": "Descubre los lanzamientos m\u00e1s destacados que llegar\u00e1n a PlayStation 5 en octubre de 2026, incluidos los t\u00edtulos m\u00e1s esperados de Konami, S-Game y Activision.",
-    "hash": "124873f1f5b30a3595aa231afe7a39d2f2bd8635"
+    "hash": "9d82d0d16bc684e669a56419fe640cd76563d9d6"
   },
   "es-ar": {
     "status": "ok",
@@ -172,14 +172,14 @@
     "ts": "1791906657443",
     "title": "Este mes en PlayStation | Lanzamientos de PS5: octubre de 2026",
     "desc": "Descubre los lanzamientos m\u00e1s destacados que llegar\u00e1n a PlayStation 5 en octubre de 2026, incluidos los t\u00edtulos m\u00e1s esperados de Konami, S-Game y Activision.",
-    "hash": "9d82d0d16bc684e669a56419fe640cd76563d9d6"
+    "hash": "1ee5b6c5b6fa52bc39a8d9ffdaad9e851dd5e890"
   },
   "es-pe": {
     "status": "ok",
-    "ts": "1791906660539",
-    "title": "Este mes en PlayStation | Lanzamientos de PS5: octubre de 2026",
-    "desc": "Descubre los lanzamientos m\u00e1s destacados que llegar\u00e1n a PlayStation 5 en octubre de 2026, incluidos los t\u00edtulos m\u00e1s esperados de Konami, S-Game y Activision.",
-    "hash": "fae7256aa2b3dfa16c6dbd5ad1e33ec264f1ef7f"
+    "ts": null,
+    "title": "",
+    "desc": "",
+    "hash": "1458631a61292a7ae5b7c66d9c64ef4f89fd0ef7"
   },
   "it-it": {
     "status": "ok",
@@ -235,21 +235,21 @@
     "ts": "1791906743713",
     "title": "T\u00e4ss\u00e4 kuussa PlayStationilla | PS5-julkaisut \u2013 lokakuu 2026",
     "desc": "Tutustu PlayStation 5:lle lokakuussa 2026 saapuviin suurimpiin uusiin julkaisuihin, mukaan lukien odotettuihin peleihin Konamilta, S-Gamelta ja Activisionilta.",
-    "hash": "3cae67fe33d429b342ae5b685d45cb082b375d59"
+    "hash": "368a0afa94a94268c88052a9312f39e31805f406"
   },
   "pl-pl": {
     "status": "ok",
     "ts": "1791906757506",
     "title": "W tym miesi\u0105cu na PlayStation | Premiery PS5 \u2013 pa\u017adziernik 2026 r.",
     "desc": "Odkryj najwi\u0119ksze premiery, kt\u00f3re pojawi\u0105 si\u0119 na PlayStation 5 w pa\u017adzierniku 2026 roku, w tym gor\u0105co oczekiwane tytu\u0142y od Konami, S-Game i Activision.",
-    "hash": "c1a69c47301405db48daf42ade90c534f1565e96"
+    "hash": "7992dff7fe017a2bf6a296eeb97f8ab343d8774d"
   },
   "cs-cz": {
     "status": "ok",
     "ts": "1791906729142",
     "title": "Tento m\u011bs\u00edc na PlayStation | Hry vydan\u00e9 na PS5 b\u011bhem \u0159\u00edjna 2026",
     "desc": "Objev nejv\u011bt\u0161\u00ed hry, kter\u00e9 v \u0159\u00edjnu 2026 doraz\u00ed na PlayStation 5, v\u010detn\u011b velmi o\u010dek\u00e1van\u00fdch hit\u016f od spole\u010dnost\u00ed Konami, S-Game a Activision.",
-    "hash": "b46bd3e73da5d882f2e8d0a6aa88f13ebfd7d564"
+    "hash": "fdd48d3b642c44ba1b2b79ca2e392690896ec9f8"
   },
   "el-gr": {
     "status": "ok",
