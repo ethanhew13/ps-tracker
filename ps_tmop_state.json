@@ -18,7 +18,7 @@
     "ts": "1791906647101",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
+    "hash": "70b706ad1a376c745d8980dc2266508e5cd8a06e"
   },
   "en-ca": {
     "status": "ok",
@@ -39,14 +39,14 @@
     "ts": "1791906710707",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "69c5151ce927ea080b9a62417787ee1e4643c951"
+    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
   },
   "en-nz": {
     "status": "ok",
     "ts": "1791906675179",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "abe34072ab5e82e66dd3ef87e585e768ec1ede4b"
+    "hash": "6c80030df5562eabcea3188e7b53713eb58e1951"
   },
   "en-in": {
     "status": "ok",
@@ -95,14 +95,14 @@
     "ts": "1791353495431",
     "title": "This Month on PlayStation | PS5 releases - October 2026",
     "desc": "Discover the biggest new releases coming to PlayStation 5 in October 2026, including hotly anticipated releases from Konami, S-Game and Activision.",
-    "hash": "9814b6a7110d4ae394a87589f25ea8734e6c253f"
+    "hash": "5f241b9edaff716f4b339a7f630219448d200810"
   },
   "de-de": {
     "status": "ok",
     "ts": "1791906647111",
     "title": "Diesen Monat bei PlayStation | Ver\u00f6ffentlichungen f\u00fcr PS5\u00a0\u2013 Oktober 2026",
     "desc": "Entdecke die gr\u00f6\u00dften Neuver\u00f6ffentlichungen, die im Oktober 2026 f\u00fcr PlayStation 5 erscheinen, darunter mit Spannung erwartete Titel von Konami, S-Game und Activision.",
-    "hash": "0f7588e83834c53be923927d0b608421a1ea1b1c"
+    "hash": "d86f8dbfc735cdd642118cdeea636097c814c178"
   },
   "de-at": {
     "status": "ok",
@@ -151,7 +151,7 @@
     "ts": "1791906645471",
     "title": "Este mes en PlayStation | Lanzamientos de PS5: octubre de 2026",
     "desc": "Descubre los lanzamientos m\u00e1s destacados que llegar\u00e1n a PlayStation 5 en octubre de 2026, incluidos los t\u00edtulos m\u00e1s esperados de Konami, S-Game y Activision.",
-    "hash": "9d82d0d16bc684e669a56419fe640cd76563d9d6"
+    "hash": "124873f1f5b30a3595aa231afe7a39d2f2bd8635"
   },
   "es-ar": {
     "status": "ok",
@@ -176,10 +176,10 @@
   },
   "es-pe": {
     "status": "ok",
-    "ts": null,
-    "title": "",
-    "desc": "",
-    "hash": "1458631a61292a7ae5b7c66d9c64ef4f89fd0ef7"
+    "ts": "1791906660539",
+    "title": "Este mes en PlayStation | Lanzamientos de PS5: octubre de 2026",
+    "desc": "Descubre los lanzamientos m\u00e1s destacados que llegar\u00e1n a PlayStation 5 en octubre de 2026, incluidos los t\u00edtulos m\u00e1s esperados de Konami, S-Game y Activision.",
+    "hash": "9d82d0d16bc684e669a56419fe640cd76563d9d6"
   },
   "it-it": {
     "status": "ok",
@@ -235,14 +235,14 @@
     "ts": "1791906743713",
     "title": "T\u00e4ss\u00e4 kuussa PlayStationilla | PS5-julkaisut \u2013 lokakuu 2026",
     "desc": "Tutustu PlayStation 5:lle lokakuussa 2026 saapuviin suurimpiin uusiin julkaisuihin, mukaan lukien odotettuihin peleihin Konamilta, S-Gamelta ja Activisionilta.",
-    "hash": "368a0afa94a94268c88052a9312f39e31805f406"
+    "hash": "3cae67fe33d429b342ae5b685d45cb082b375d59"
   },
   "pl-pl": {
     "status": "ok",
     "ts": "1791906757506",
     "title": "W tym miesi\u0105cu na PlayStation | Premiery PS5 \u2013 pa\u017adziernik 2026 r.",
     "desc": "Odkryj najwi\u0119ksze premiery, kt\u00f3re pojawi\u0105 si\u0119 na PlayStation 5 w pa\u017adzierniku 2026 roku, w tym gor\u0105co oczekiwane tytu\u0142y od Konami, S-Game i Activision.",
-    "hash": "7992dff7fe017a2bf6a296eeb97f8ab343d8774d"
+    "hash": "c1a69c47301405db48daf42ade90c534f1565e96"
   },
   "cs-cz": {
     "status": "ok",
