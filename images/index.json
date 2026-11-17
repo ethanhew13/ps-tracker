@@ -141,6 +141,9 @@
   "bytes": 51,
   "file": "fec619d6bf934281.gif"
  },
+ "https://gmedia.playstation.com/is/content/SIEPDC/global_pdc/en/hardware/ps5-pro/channel-specific-content/2024/videos/ps5-pro-pssr-video-01-en-16aug24.mp4": {
+  "failed": 3
+ },
  "https://gmedia.playstation.com/is/image/SIEPDC/Grand-Theft-Auto-VI-Mid-Purple-Gradient-Background-Block-Desktop-01-19jun26": {
   "bytes": 1950,
   "file": "9e8e4ccd555daa5d.jpg"
@@ -258,6 +261,14 @@
  "https://gmedia.playstation.com/is/image/SIEPDC/ps-logo-favicon": {
   "bytes": 7962,
   "file": "aa2e9668dddc9d3d.webp"
+ },
+ "https://gmedia.playstation.com/is/image/SIEPDC/ps5-pro-pssr-video-thumb-01-en-16aug24": {
+  "bytes": 122184,
+  "file": "f6f86a64ddc3a905.webp"
+ },
+ "https://gmedia.playstation.com/is/image/SIEPDC/pssr-icon-white-01-en-16aug24": {
+  "bytes": 29964,
+  "file": "6c99f8ea9bfda8ea.webp"
  },
  "https://i.ytimg.com/vi_webp/8L0CzL2V72c/hqdefault.webp": {
   "bytes": 9238,
