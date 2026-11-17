@@ -813,9 +813,9 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794880866.429627,
-   "fails": 0,
-   "status": "ok",
+   "last_run": 1794884472.615608,
+   "fails": 1,
+   "status": "no working feed found",
    "baselined": true,
    "seen": [
     "5efb8e734a74",
@@ -1176,7 +1176,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794880866.429627,
+   "last_run": 1794884472.615608,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1469,7 +1469,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794880866.429627,
+   "last_run": 1794884472.615608,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1562,7 +1562,7 @@
   },
   "dimensional-innovations": {
    "feed_url": "https://www.di.net/feed/",
-   "last_run": 1794877263.061166,
+   "last_run": 1794884472.615608,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1595,7 +1595,7 @@
    "bad_reported": true
   },
   "venue-kaseya": {
-   "last_run": 1794877263.061166,
+   "last_run": 1794884472.615608,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1660,7 +1660,8 @@
     "7be855044922",
     "eefeb2c36446",
     "02ef9acacdc6",
-    "f11590d54e2d"
+    "f11590d54e2d",
+    "7dd2b53235c8"
    ],
    "bad_reported": false
   },
@@ -1684,7 +1685,7 @@
    "bad_reported": true
   },
   "venue-bayfront": {
-   "last_run": 1794877263.061166,
+   "last_run": 1794884472.615608,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23512,7 +23513,7 @@
     "take2games.com": "18406855653",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794880866.429627,
+   "last_run": 1794884472.615608,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23825,6 +23826,12 @@
    "label": "Google News: GTA VI + Miami",
    "title": "Miami places near the top, Port St. Lucie near the bottom of 'sinful cities' list - WPEC",
    "url": "https://news.google.com/rss/articles/CBMi2AJBVV95cUxQMzFuMjM2bGtVQVM0T09IblZfaHUzMjRGaUFNMjk0T29ULVJYWGk0TlZicnZoUldNQ282d2JMOHBvTlpTZzNCSG55bl9Mcmk4andSa05TWnI3N0pOalZNLXFnblNYSGx4ZS1SMjRrdy1vdGxBVG83d0JWZ3NzbVA2cHJTYUNHVDlSZENyRGpfYTEtX2ZkXzZBMmp5RGhmY0MzN0ZBaFV4bl9uMnJaeDIxRkdzNW9XNWdsSWZXSW5jZmZGb0lNdGQ4S0J0UzhianVsNlBCR3RwWGdyRjZqSXJzNTM4S1ViMmhFZ1B5WGJ4R0h2cGVNT05SRlNDeFdzQmg3aHI3MFMtSVU0LXRCeDdIempQNnE0dUxBa0pZa1pmUkRQMGtabmJDYVptcm52MDZFQ2FkTmVXX3N6dzgwaGRXR21zM3JEb3hYdXdVcmF6Q1dLOVA2WTBtcw?oc=5",
+   "mark": false
+  },
+  {
+   "label": "Kaseya Center events",
+   "title": "Kaseya Center All-Access Tour",
+   "url": "https://www.kaseyacenter.com/events/detail/kaseya-center-all-access-tour-138",
    "mark": false
   }
  ],
