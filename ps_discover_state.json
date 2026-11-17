@@ -844,9 +844,9 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794938474.166201,
-   "fails": 0,
-   "status": "ok",
+   "last_run": 1794942070.073731,
+   "fails": 1,
+   "status": "no working feed found",
    "baselined": true,
    "seen": [
     "5efb8e734a74",
@@ -1210,7 +1210,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794938474.166201,
+   "last_run": 1794942070.073731,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1496,7 +1496,9 @@
     "0102b64a7ce2",
     "0fac53f68a05",
     "5a57817cc56f",
-    "8ee3bcb0ff54"
+    "8ee3bcb0ff54",
+    "4d19d9f4f2ec",
+    "66b77b03b9e9"
    ],
    "bad_reported": false
   },
@@ -1514,7 +1516,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794938474.166201,
+   "last_run": 1794942070.073731,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1610,7 +1612,7 @@
   },
   "dimensional-innovations": {
    "feed_url": "https://www.di.net/feed/",
-   "last_run": 1794934878.500438,
+   "last_run": 1794942070.073731,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1643,7 +1645,7 @@
    "bad_reported": true
   },
   "venue-kaseya": {
-   "last_run": 1794934878.500438,
+   "last_run": 1794942070.073731,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1734,7 +1736,7 @@
    "bad_reported": true
   },
   "venue-bayfront": {
-   "last_run": 1794934878.500438,
+   "last_run": 1794942070.073731,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23594,7 +23596,7 @@
     "take2games.com": "18406855653",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794938474.166201,
+   "last_run": 1794942070.073731,
    "fails": 0,
    "status": "ok",
    "baselined": true,
