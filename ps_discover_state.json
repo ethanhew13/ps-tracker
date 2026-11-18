@@ -876,7 +876,7 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1794985286.279246,
+   "last_run": 1794988947.333408,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1248,7 +1248,7 @@
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1794985286.279246,
+   "last_run": 1794988947.333408,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1558,7 +1558,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1794985286.279246,
+   "last_run": 1794988947.333408,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -23640,7 +23640,7 @@
     "take2games.com": "18406855653",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1794985286.279246,
+   "last_run": 1794988947.333408,
    "fails": 0,
    "status": "ok",
    "baselined": true,
