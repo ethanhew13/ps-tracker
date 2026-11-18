@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1795007754.135064,
+   "last_run": 1795009565.725948,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -607,13 +607,16 @@
     "c83d1458320a",
     "8dcc36e25183",
     "83c98e28a511",
-    "7f6948f07d49"
+    "7f6948f07d49",
+    "2ace1a2cb825",
+    "186844097c5d",
+    "2bc461d1a28e"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1795007754.135064,
+   "last_run": 1795009565.725948,
    "fails": 0,
    "status": "ok",
    "baselined": true,
