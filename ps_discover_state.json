@@ -917,9 +917,9 @@
   },
   "gnews-gta6-ooh": {
    "feed_url": "https://news.google.com/rss/search?q=%22GTA%206%22%20%28billboard%20OR%20%22out%20of%20home%22%20OR%20takeover%20OR%20%22launch%20event%22%20OR%20%22midnight%20launch%22%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1795014090.848588,
-   "fails": 1,
-   "status": "no working feed found",
+   "last_run": 1795017691.407215,
+   "fails": 0,
+   "status": "ok",
    "baselined": true,
    "seen": [
     "5efb8e734a74",
@@ -1287,13 +1287,15 @@
     "9fc28eae2d35",
     "fd566bb85b2e",
     "383c95c4cc84",
-    "28a883918fc5"
+    "28a883918fc5",
+    "c56ef2465948",
+    "87585fd17c3b"
    ],
    "bad_reported": false
   },
   "adweek": {
    "feed_url": "https://www.adweek.com/feed/",
-   "last_run": 1795014090.848588,
+   "last_run": 1795017691.407215,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1586,7 +1588,14 @@
     "90bdb2703287",
     "b6fb48df7365",
     "559e4c19e15d",
-    "46c8a619aaab"
+    "46c8a619aaab",
+    "c66ff06a7275",
+    "4f9347173b83",
+    "7481f492602b",
+    "6b4cd94dca15",
+    "0ce8a85eb549",
+    "8114ddffcc28",
+    "f46d1771191e"
    ],
    "bad_reported": false
   },
@@ -1604,7 +1613,7 @@
   },
   "marketingdive": {
    "feed_url": "https://www.marketingdive.com/feeds/news/",
-   "last_run": 1795014090.848588,
+   "last_run": 1795017691.407215,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1696,7 +1705,8 @@
     "b0d4d8e855fa",
     "0f4464ba5a9f",
     "aaf17f297ab2",
-    "b96bb3314316"
+    "b96bb3314316",
+    "54cf46985b15"
    ],
    "bad_reported": false
   },
@@ -23687,7 +23697,7 @@
     "take2games.com": "18406855653",
     "rockstarwarehouse.com": "17277943796"
    },
-   "last_run": 1795014090.848588,
+   "last_run": 1795017691.407215,
    "fails": 0,
    "status": "ok",
    "baselined": true,
