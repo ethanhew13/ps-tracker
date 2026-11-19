@@ -2,7 +2,7 @@
  "sources": {
   "gnews-gta6-miami": {
    "feed_url": "https://news.google.com/rss/search?q=%22Grand%20Theft%20Auto%20VI%22%20%28Miami%20OR%20%22Vice%20City%22%20OR%20%22Kaseya%20Center%22%29%20%28permit%20OR%20billboard%20OR%20event%20OR%20takeover%20OR%20sign%20OR%20%22pop-up%22%20OR%20activation%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1795101369.458485,
+   "last_run": 1795103180.421461,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -719,13 +719,46 @@
     "9ecff20b9731",
     "643af517eb90",
     "a572ad47f12a",
-    "0c51a5cee23f"
+    "0c51a5cee23f",
+    "a99f31949fd6",
+    "65c3be5558d5",
+    "c3d981513b73",
+    "2a3127335784",
+    "efc5d0dd5b30",
+    "9de85cb327a7",
+    "883e6e9c1384",
+    "4eaa4b718ae9",
+    "db6902499a79",
+    "f40dcfc23c83",
+    "eef4d757b805",
+    "039c61025a20",
+    "e24a1347256c",
+    "39903579cb1c",
+    "979a2a3d37b7",
+    "a502aab77779",
+    "9f4b0cca08d9",
+    "50005bd0c902",
+    "6d8f237d95aa",
+    "921d6db5feb4",
+    "5d9d7cfd64f0",
+    "39b8626af481",
+    "74f0b5ccbf8b",
+    "27fa6e34121c",
+    "3a88fa91fa84",
+    "fbdf059a30c1",
+    "cb848fff1163",
+    "55d1b9939a5e",
+    "9b3bf689acec",
+    "456301d6740c",
+    "3d42311f322b",
+    "8d2b20ee1064",
+    "75077833912b"
    ],
    "bad_reported": false
   },
   "gnews-rockstar-miami": {
    "feed_url": "https://news.google.com/rss/search?q=Rockstar%20Games%20Miami%20%28permit%20OR%20billboard%20OR%20event%20OR%20sign%20OR%20%22Kaseya%20Center%22%20OR%20rooftop%29&hl=en-US&gl=US&ceid=US:en",
-   "last_run": 1795101369.458485,
+   "last_run": 1795103180.421461,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -1024,7 +1057,8 @@
     "3411fd6bc207",
     "142a94a534c8",
     "efec99ab0e1c",
-    "c7c857b5fed7"
+    "c7c857b5fed7",
+    "e392634570cd"
    ],
    "bad_reported": false
   },
@@ -2085,7 +2119,7 @@
    "bad_reported": true
   },
   "lobby-miami-beach": {
-   "last_run": 1795092357.502422,
+   "last_run": 1795103180.421461,
    "fails": 0,
    "status": "ok",
    "baselined": true,
@@ -10417,7 +10451,7 @@
    ]
   },
   "lobby-miami": {
-   "last_run": 1795092357.502422,
+   "last_run": 1795103180.421461,
    "fails": 0,
    "status": "ok",
    "baselined": true,
